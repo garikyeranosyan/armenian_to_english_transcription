@@ -29,7 +29,10 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from live_hy_en.capture import SAMPLE_RATE_HZ  # noqa: E402
-from live_hy_en.transcriber import is_armenian  # noqa: E402
+from live_hy_en.transcriber import (  # noqa: E402
+    FasterWhisperRecognizer,
+    is_armenian,
+)
 
 FLEURS_URL = "https://huggingface.co/datasets/google/fleurs/resolve/main/data/hy_am"
 FLEURS_SPLIT = "test"
@@ -43,8 +46,6 @@ DEFAULT_MODELS = ["small", "medium", "large-v3-turbo", "large-v3"]
 DEFAULT_CLIP_LIMIT = 200
 # Transcription share of the 5 s latency budget (PLAN.md §2).
 ASR_BUDGET_S = 2.0
-LANGUAGE = "hy"
-BEAM_SIZE = 5
 
 # Armenian marks written inside a word (e.g. the question mark in "ինչպե՞ս").
 IN_WORD_MARKS = re.compile("[՚-՟]")
@@ -261,40 +262,13 @@ def write_transcripts(model: str, results: Sequence[ClipResult]) -> Path:
     return path
 
 
-def add_cuda_dll_dirs() -> None:
-    """Let CTranslate2 find the cuBLAS and cuDNN DLLs from NVIDIA's pip wheels."""
-    if sys.platform != "win32":
-        return
-    nvidia_dir = Path(sys.prefix) / "Lib" / "site-packages" / "nvidia"
-    for library in ("cublas", "cudnn"):
-        dll_dir = nvidia_dir / library / "bin"
-        if dll_dir.is_dir():
-            os.add_dll_directory(str(dll_dir))
-            os.environ["PATH"] = f"{dll_dir}{os.pathsep}{os.environ['PATH']}"
-
-
 def load_whisper(
-    model: str, device: str, compute_type: str, token: str | None
+    model: str, device: str | None, compute_type: str | None, token: str | None
 ) -> Transcribe:
-    """Load a faster-whisper model and return a function that transcribes clips."""
-    add_cuda_dll_dirs()
-    from faster_whisper import WhisperModel
-
-    whisper = WhisperModel(
-        model, device=device, compute_type=compute_type, use_auth_token=token
-    )
-
-    def transcribe(samples: np.ndarray) -> str:
-        segments, _ = whisper.transcribe(
-            samples,
-            language=LANGUAGE,
-            beam_size=BEAM_SIZE,
-            condition_on_previous_text=False,
-            without_timestamps=True,
-        )
-        return " ".join(segment.text.strip() for segment in segments)
-
-    return transcribe
+    """Load a model through the program's own recognizer, so the same code is timed."""
+    return FasterWhisperRecognizer(
+        model, device=device, compute_type=compute_type, token=token
+    ).recognize
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -307,8 +281,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="faster-whisper model names or local CTranslate2 model folders",
     )
     parser.add_argument("--limit", type=int, default=DEFAULT_CLIP_LIMIT)
-    parser.add_argument("--device", default="cuda")
-    parser.add_argument("--compute-type", default="float16")
+    parser.add_argument("--device", help="cuda or cpu (default: the GPU if found)")
+    parser.add_argument(
+        "--compute-type", help="e.g. float16 or int8 (default: by device)"
+    )
     return parser.parse_args(argv)
 
 

@@ -1,10 +1,23 @@
 """Tests for transcription (PLAN.md §3 module 5, §6 risk 1: wrong or empty text)."""
 
+from types import SimpleNamespace
+
+import ctranslate2
+import faster_whisper
 import numpy as np
 import pytest
 
 from live_hy_en.capture import SAMPLE_RATE_HZ
-from live_hy_en.transcriber import Transcriber, is_armenian
+from live_hy_en.transcriber import (
+    ASR_MODEL,
+    CPU_COMPUTE_TYPE,
+    GPU_COMPUTE_TYPE,
+    LANGUAGE,
+    FasterWhisperRecognizer,
+    ModelLoadError,
+    Transcriber,
+    is_armenian,
+)
 
 SEGMENT = np.full(SAMPLE_RATE_HZ * 2, 0.1, dtype=np.float32)
 
@@ -57,6 +70,15 @@ def test_warm_up_runs_the_model_once_on_a_second_of_silence():
     assert not samples.any()
 
 
+def test_warm_up_failure_gives_clear_error():
+    class BrokenRecognizer:
+        def recognize(self, samples: np.ndarray) -> str:
+            raise RuntimeError("Could not load library cudnn_ops64_9.dll")
+
+    with pytest.raises(ModelLoadError, match="first run.*cudnn_ops64_9"):
+        Transcriber(BrokenRecognizer()).warm_up()
+
+
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
@@ -70,3 +92,88 @@ def test_warm_up_runs_the_model_once_on_a_second_of_silence():
 )
 def test_is_armenian_flags_the_wrong_script(text, expected):
     assert is_armenian(text) is expected
+
+
+class FakeWhisperModel:
+    """Stands in for faster_whisper.WhisperModel and records how it was used."""
+
+    instances: list["FakeWhisperModel"] = []
+
+    def __init__(self, model, **options) -> None:
+        self.model = model
+        self.options = options
+        self.transcribe_options: dict = {}
+        FakeWhisperModel.instances.append(self)
+
+    def transcribe(self, samples, **options):
+        self.transcribe_options = options
+        segments = [
+            SimpleNamespace(text=" Բարև, "),
+            SimpleNamespace(text="ինչպե՞ս ես։ "),
+        ]
+        return iter(segments), None
+
+
+@pytest.fixture
+def fake_whisper(monkeypatch):
+    FakeWhisperModel.instances = []
+    monkeypatch.setattr(faster_whisper, "WhisperModel", FakeWhisperModel)
+    return FakeWhisperModel
+
+
+def _gpu_count(monkeypatch, count: int) -> None:
+    monkeypatch.setattr(ctranslate2, "get_cuda_device_count", lambda: count)
+
+
+def test_default_model_is_the_benchmark_choice(fake_whisper, monkeypatch):
+    _gpu_count(monkeypatch, 1)
+    FasterWhisperRecognizer()
+    assert fake_whisper.instances[0].model == ASR_MODEL == "large-v3-turbo"
+
+
+def test_any_model_can_be_plugged_in(fake_whisper, monkeypatch):
+    _gpu_count(monkeypatch, 1)
+    FasterWhisperRecognizer("path/to/armenian-fine-tune")
+    assert fake_whisper.instances[0].model == "path/to/armenian-fine-tune"
+
+
+def test_gpu_is_used_when_present(fake_whisper, monkeypatch):
+    _gpu_count(monkeypatch, 1)
+    FasterWhisperRecognizer()
+    options = fake_whisper.instances[0].options
+    assert options["device"] == "cuda"
+    assert options["compute_type"] == GPU_COMPUTE_TYPE
+
+
+def test_cpu_is_the_fallback_without_a_gpu(fake_whisper, monkeypatch, caplog):
+    _gpu_count(monkeypatch, 0)
+    FasterWhisperRecognizer()
+    options = fake_whisper.instances[0].options
+    assert options["device"] == "cpu"
+    assert options["compute_type"] == CPU_COMPUTE_TYPE
+    assert "No CUDA GPU" in caplog.text
+
+
+def test_explicit_cpu_gets_a_cpu_compute_type(fake_whisper):
+    FasterWhisperRecognizer(device="cpu")
+    assert fake_whisper.instances[0].options["compute_type"] == CPU_COMPUTE_TYPE
+
+
+def test_token_is_passed_to_the_download(fake_whisper):
+    FasterWhisperRecognizer(device="cpu", token="hf_secret")
+    assert fake_whisper.instances[0].options["use_auth_token"] == "hf_secret"
+
+
+def test_language_is_fixed_to_armenian_and_segments_are_joined(fake_whisper):
+    recognizer = FasterWhisperRecognizer(device="cpu")
+    assert recognizer.recognize(SEGMENT) == "Բարև, ինչպե՞ս ես։"
+    assert fake_whisper.instances[0].transcribe_options["language"] == LANGUAGE == "hy"
+
+
+def test_load_failure_gives_clear_error(monkeypatch):
+    def failing_model(model, **options):
+        raise RuntimeError("CUDA driver version is insufficient")
+
+    monkeypatch.setattr(faster_whisper, "WhisperModel", failing_model)
+    with pytest.raises(ModelLoadError, match="large-v3-turbo.*on cuda.*CUDA driver"):
+        FasterWhisperRecognizer(device="cuda")
