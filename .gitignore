@@ -24,3 +24,6 @@ models/
 
 # Secrets
 .env
+
+# Benchmark datasets
+benchmarks/data/
