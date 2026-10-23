@@ -63,3 +63,23 @@ Each entry uses this format:
 - **Decision:** PortAudio calls `_on_audio` on its own thread.
 - **Reason:** no reader thread of our own is needed, and capture runs independently of model work.
 - **Alternatives considered:** a thread per source calling blocking `read()` (more threads and shutdown code).
+
+## segmenter.py
+
+### 1. Silero VAD run directly with onnxruntime (2026-10-23)
+
+- **Decision:** detect speech with Silero VAD's ONNX model (v6.2.3, MIT licence), loaded with `onnxruntime`; the model file is downloaded once into `models/`.
+- **Reason:** most accurate of the candidates on noisy and compressed call audio, and onnxruntime needs no PyTorch for this stage.
+- **Alternatives considered:** the official `silero-vad` package (simpler API, but pulls in PyTorch); WebRTC VAD (tiny and fast, but more false triggers on noise and call audio).
+
+### 2. Segments are capped at 10 s (2026-10-23)
+
+- **Decision:** a phrase longer than 10 s is cut there, even without a pause.
+- **Reason:** keeps transcription time per segment inside the 5 s latency limit while still fitting most sentences.
+- **Alternatives considered:** 6 s (safer for latency, but splits more sentences and can hurt translation); 15 s (fewer cuts, but slower transcription and a higher risk to the limit).
+
+### 3. VAD runs on the CPU (2026-10-23)
+
+- **Decision:** the VAD uses onnxruntime's CPU provider with one thread.
+- **Reason:** scoring a 32 ms window is cheap, and the GPU is kept free for transcription and translation, which need it most.
+- **Alternatives considered:** running the VAD on the GPU (competes with the heavier models for no real gain).
