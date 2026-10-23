@@ -89,7 +89,8 @@ Follow **PEP 8** throughout. Check with a linter and formatter (e.g. `ruff` and 
 2. **No over-engineering.** Implement the simplest thing that meets `PLAN.md`; add configuration only where the brief or plan needs it.
 3. **One way to do each thing.** Reuse existing helpers instead of writing parallel versions.
 4. **Pin dependencies** in `requirements.txt`; don't add a library unless it is needed by a planned module.
-5. Before finishing a change: run the linter and the tests, and remove anything left over from debugging.
+5. **Keep the virtual environment in step.** The project uses a Windows virtual environment in `.venv/` (never committed). Whenever a change adds or changes a dependency, update `requirements.txt` in the same change and update `.venv` with `.\.venv\Scripts\python.exe -m pip install -r requirements.txt`; if Claude cannot run it, Claude gives the user this command.
+6. Before finishing a change: run the linter and the tests, and remove anything left over from debugging.
 
 ---
 
