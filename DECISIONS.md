@@ -83,3 +83,35 @@ Each entry uses this format:
 - **Decision:** the VAD uses onnxruntime's CPU provider with one thread.
 - **Reason:** scoring a 32 ms window is cheap, and the GPU is kept free for transcription and translation, which need it most.
 - **Alternatives considered:** running the VAD on the GPU (competes with the heavier models for no real gain).
+
+## transcriber.py
+
+### 1. Transcription model is large-v3-turbo (2026-10-24)
+
+- **Decision:** transcribe with Whisper `large-v3-turbo`.
+- **Reason:** in the M1 benchmark (200 FLEURS Armenian clips, this laptop's GPU) it was the most accurate model that fits the 2 s transcription budget: 46.1 % WER, 0.63 s mean and 0.93 s worst case per clip.
+- **Alternatives considered:** `large-v3` (42.6 % WER, but 3.11 s mean and 175 of 200 clips over budget); `medium` (56.1 % WER, 123 clips over budget); `small` (81.3 % WER).
+
+### 2. faster-whisper (CTranslate2) as the ASR runtime (2026-10-23)
+
+- **Decision:** run Whisper models with `faster-whisper`.
+- **Reason:** several times faster than PyTorch Whisper, supports float16 and int8, uses less memory and needs no PyTorch.
+- **Alternatives considered:** Hugging Face `transformers` with PyTorch (runs any fine-tune directly, but slower, heavier and adds about 2.5 GB; faster-whisper needs a one-time conversion for fine-tunes instead).
+
+### 3. The model sits behind a generic SpeechRecognizer interface (2026-10-24)
+
+- **Decision:** the transcriber depends only on a `SpeechRecognizer` interface; the concrete model is set in one constant, `ASR_MODEL`.
+- **Reason:** a later benchmark winner can be swapped in without changing the rest of the program, and tests can use a fake model.
+- **Alternatives considered:** calling faster-whisper directly throughout the code.
+
+### 4. The model is chosen by a benchmark on FLEURS Armenian (2026-10-23)
+
+- **Decision:** compare candidates with `benchmarks/asr_benchmark.py` on the FLEURS `hy_am` test split: WER, CER, wrong-script output and time per clip against the 2 s budget, run through the program's own recognizer on this laptop's GPU.
+- **Reason:** `PLAN.md` requires model choices to be decided by benchmarks on this machine; published scores don't reflect this hardware or this code.
+- **Alternatives considered:** choosing from published WER figures.
+
+### 5. GPU first, CPU as the fallback (2026-10-24)
+
+- **Decision:** use CUDA with float16 when a GPU is found; otherwise use the CPU with int8 and log a warning.
+- **Reason:** `PLAN.md` requires the GPU first with a CPU fallback; float16 is fastest on the GPU and int8 is fastest on the CPU.
+- **Alternatives considered:** requiring a GPU (fails on machines without one); one compute type for both devices (float16 is slow or unsupported on CPU).

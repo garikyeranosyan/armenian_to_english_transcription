@@ -7,7 +7,8 @@ These instructions apply to every Claude Cowork session working on this project.
 ## 1. Project
 
 - **Repository:** https://github.com/garikyeranosyan/armenian_to_english_transcription
-- **Default branch:** `main`
+- **Default branch:** `main` (receives changes only through pull requests)
+- **Working branch:** `dev`
 - **Local folder:** `Desktop\armenian_to_english_transcription`
 - **What it is:** a Python terminal program that captures the microphone and system audio (WASAPI loopback) on Windows. It transcribes spoken Armenian, translates it to English and prints each segment with time, speaker (`Me` / `Speaker N`), `HY:` and `EN:`, at most **5 s** after the phrase ends. All models run locally.
 - **Target machine:** this Windows x64 laptop with GPU (also the interview device). Use the GPU first and fall back to the CPU.
@@ -108,7 +109,8 @@ Follow **PEP 8** throughout. Check with a linter and formatter (e.g. `ruff` and 
 
 - **Never commit** model weights, audio recordings, API keys or other secrets; `.gitignore` must cover them.
 - Commit small, focused changes with clear messages in the imperative mood (e.g. `Add WASAPI loopback capture`).
-- Commit or push only when the user asks.
+- **Work only on the `dev` branch.** Never commit or push directly to `main`; changes reach `main` only through a pull request from `dev` to `main`.
+- Commit, push or open a pull request only when the user asks.
 - Keep the README up to date with the brief: setup and run (including Windows audio setup), model choices with alternatives and reasons, architecture, known limitations and improvements.
 - `chats/` must contain **every** Claude Cowork session for this project, exported in full and unedited, one `.md` file per session. No other AI assistant may be used.
 
