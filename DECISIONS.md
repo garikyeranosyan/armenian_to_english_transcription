@@ -115,3 +115,67 @@ Each entry uses this format:
 - **Decision:** use CUDA with float16 when a GPU is found; otherwise use the CPU with int8 and log a warning.
 - **Reason:** `PLAN.md` requires the GPU first with a CPU fallback; float16 is fastest on the GPU and int8 is fastest on the CPU.
 - **Alternatives considered:** requiring a GPU (fails on machines without one); one compute type for both devices (float16 is slow or unsupported on CPU).
+
+## translator.py
+
+### 1. CTranslate2 with sentencepiece as the MT runtime (2026-10-24)
+
+- **Decision:** run translation models with CTranslate2 and tokenize with sentencepiece; float16 on the GPU, int8 on the CPU.
+- **Reason:** CTranslate2 is already a dependency through faster-whisper, it is fast and memory-efficient, and it runs every candidate family (NLLB, M2M100, MADLAD-400, OPUS-MT) without loading PyTorch at runtime.
+- **Alternatives considered:** Hugging Face `transformers` with PyTorch (runs every model directly, but slower, heavier and adds PyTorch to the running program).
+
+### 2. Candidates are converted once from the publishers' own models (2026-10-24)
+
+- **Decision:** `benchmarks/convert_mt.py` converts each candidate from its original Hugging Face upload into `models/mt/`, in the project `.venv`; `transformers` and `torch` are pinned in `requirements.txt` but only the converter imports them.
+- **Reason:** the weights come from Meta, Google and Helsinki-NLP rather than third parties, and every candidate can be converted the same way.
+- **Alternatives considered:** community pre-converted CTranslate2 uploads (no conversion step, but third-party files and not every candidate has one); a separate conversion virtual environment (keeps PyTorch out of `.venv`, but extra setup).
+
+### 3. The model sits behind a generic TextTranslator interface (2026-10-24)
+
+- **Decision:** the translator depends only on a `TextTranslator` interface; the concrete model is set in one constant, `MT_MODEL`, and each model family's prompt format (language codes or tags) is data in `MT_MODELS`.
+- **Reason:** the benchmark winner can be swapped in without changing the rest of the program, and tests can use a fake model.
+- **Alternatives considered:** calling CTranslate2 directly throughout the code; one adapter class per model family (more code for what is only a difference in prompt tokens).
+
+### 4. The model is chosen by a benchmark on clean text and ASR output (2026-10-24)
+
+- **Decision:** `benchmarks/mt_benchmark.py` translates the FLEURS `hy_am` sentences twice, from the reference Armenian and from the large-v3-turbo transcripts, and scores both against FLEURS `en_us` (same FLORES-200 sentences, joined by ID) with sacrebleu chrF++ and BLEU, plus time per sentence against the 0.5 s budget.
+- **Reason:** `PLAN.md` requires model choices by benchmark on this laptop and testing translation on real ASR output (risk 3); chrF++ and BLEU are the standard scores, comparable with published FLORES-200 results.
+- **Alternatives considered:** clean text only (hides how a model copes with ASR errors); an in-house chrF (no dependency, but scores may not match published numbers).
+
+### 5. The final model is chosen once the skeleton runs (2026-10-24)
+
+- **Decision:** `MT_MODEL` is provisionally `nllb-200-distilled-600M`; the benchmark is run and the model chosen once all modules are connected (`TODO.md`).
+- **Reason:** gets the end-to-end program working first (`PLAN.md` risk 13: build a thin slice first), then picks the model with the full latency picture.
+- **Alternatives considered:** running the benchmark before building the remaining modules.
+
+## speakers.py
+
+### 1. WeSpeaker ResNet34 voiceprints run with onnxruntime (2026-10-24)
+
+- **Decision:** compute speaker embeddings with WeSpeaker's VoxCeleb ResNet34 (ONNX export from sherpa-onnx, downloaded once into `models/`), run with onnxruntime; its 80-band log-mel features are computed with `kaldi-native-fbank` using WeSpeaker's training settings.
+- **Reason:** a strong, ungated speaker model that runs on the onnxruntime already used by the VAD, so no PyTorch at runtime; `kaldi-native-fbank` is small, has Windows wheels and matches Kaldi's features.
+- **Alternatives considered:** SpeechBrain ECAPA-TDNN (simple API, but loads PyTorch, torchaudio and speechbrain at runtime); pyannote embedding models (also PyTorch-based).
+
+### 2. Online clustering with running-mean voiceprints and a cosine threshold (2026-10-24)
+
+- **Decision:** each call-side speaker keeps the mean of their voiceprints; a segment joins the most similar speaker if cosine similarity reaches `SIMILARITY_THRESHOLD`, otherwise it becomes the next `Speaker N`. Labels are never renamed or merged once given.
+- **Reason:** decides as each segment arrives, costs the same however long the call runs, and keeps the labels already printed stable, as `PLAN.md` requires.
+- **Alternatives considered:** comparing with every past segment (copes better with a varying voice, but cost grows over the call and one noisy segment can mislabel later ones); offline re-clustering (better grouping, but would rename labels already printed).
+
+### 3. Short segments are treated like any other (2026-10-24)
+
+- **Decision:** there is no minimum length for a call-side segment to create a new speaker or update a voiceprint.
+- **Reason:** keeps the rule simple; whether short replies cause extra speakers is checked when tuning on real call audio.
+- **Alternatives considered:** below about 1 s, joining the nearest speaker without creating one or updating its voiceprint (`PLAN.md` risk 4 mitigation, at the cost of an extra rule).
+
+### 4. The speaker model runs on the CPU (2026-10-24)
+
+- **Decision:** onnxruntime's CPU provider runs the speaker model.
+- **Reason:** keeps the GPU for transcription and translation, which need it most; the model is small.
+- **Alternatives considered:** the GPU (would need `onnxruntime-gpu` and compete with the heavier models).
+
+### 5. The similarity threshold is tuned on real call audio later (2026-10-24)
+
+- **Decision:** `SIMILARITY_THRESHOLD` is provisionally 0.4 and is tuned with a speaker benchmark on recorded call audio once the skeleton runs (`TODO.md`).
+- **Reason:** the right value depends on call-app compression and the actual voices (`PLAN.md` risk 4), which only a real call recording shows.
+- **Alternatives considered:** tuning now on public datasets (clean studio audio, not call quality).
