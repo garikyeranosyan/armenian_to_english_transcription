@@ -62,6 +62,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="output device index or name whose sound is captured "
         "(default: the Windows default output)",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="show each phrase's latency, broken down by pipeline step",
+    )
     return parser.parse_args(argv)
 
 
