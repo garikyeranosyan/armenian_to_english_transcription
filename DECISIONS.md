@@ -179,3 +179,43 @@ Each entry uses this format:
 - **Decision:** `SIMILARITY_THRESHOLD` is provisionally 0.4 and is tuned with a speaker benchmark on recorded call audio once the skeleton runs (`TODO.md`).
 - **Reason:** the right value depends on call-app compression and the actual voices (`PLAN.md` risk 4), which only a real call recording shows.
 - **Alternatives considered:** tuning now on public datasets (clean studio audio, not call quality).
+
+## output.py
+
+### 1. Entries show the wall-clock time the phrase started (2026-10-24)
+
+- **Decision:** each entry is printed as `[HH:MM:SS] Speaker`, then `HY:` and `EN:` lines, where the time is the local time of day at the start of the phrase (session start time plus the phrase's session seconds).
+- **Reason:** easy to match with the call app and with what was said when; both sources still share one clock.
+- **Alternatives considered:** time since the session started, as in the `PLAN.md` example (matches the brief's sample, but harder to relate to the call).
+
+### 2. All terminal output goes through output.py (2026-10-24)
+
+- **Decision:** transcript entries, status lines, errors and the `--list-devices` list are all printed by `output.py`, which also switches the terminal to UTF-8 for Armenian.
+- **Reason:** keeps the `INSTRUCTIONS.md` rule that printing happens only in `output.py`, and one place handles encoding (`PLAN.md` risk 11).
+- **Alternatives considered:** one `print` for the device list in the entry point (more direct, but an exception to the rule).
+
+## pipeline.py
+
+### 1. Two model stages: transcription, then translation (2026-10-24)
+
+- **Decision:** a segmenter thread per source feeds one transcription thread (ASR, then speaker label), which feeds one translation thread (MT, then printing).
+- **Reason:** translating one phrase overlaps transcribing the next (`PLAN.md` risk 2), while each stage stays sequential so models are never run from two threads at once.
+- **Alternatives considered:** one worker running every model per phrase (simplest, but each phrase also waits for the previous translation).
+
+### 2. The bounded segment queue never drops phrases (2026-10-24)
+
+- **Decision:** the queue between segmentation and transcription holds 8 phrases; when it is full, segmentation waits and a warning is logged, while capture keeps recording into its own unbounded queue.
+- **Reason:** no speech is ever lost from the transcript.
+- **Alternatives considered:** dropping the oldest phrase (stays close to live, but loses speech); dropping the newest (keeps order, but loses speech and stays behind).
+
+### 3. Phrases are transcribed before their speaker is assigned (2026-10-24)
+
+- **Decision:** the speaker label is computed only for phrases whose transcript is kept.
+- **Reason:** noise and hallucinations dropped by the transcriber never create a `Speaker N` or shift a voiceprint.
+- **Alternatives considered:** labelling first, as drawn in the `PLAN.md` diagram (wastes a speaker-model run on dropped phrases and lets noise create speakers).
+
+### 4. The program is an installable package started with python -m live_hy_en (2026-10-24)
+
+- **Decision:** `pyproject.toml` declares the `live-hy-en` package from `src/`, and `requirements.txt` installs it in editable mode (`-e .`), so `python -m live_hy_en` works from any folder.
+- **Reason:** `PLAN.md` asks for one command to start; the editable install also needs no reinstall after code changes.
+- **Alternatives considered:** setting `PYTHONPATH=src` before each run (an extra step); adding `src` to `sys.path` inside the program (a path hack in the code).
