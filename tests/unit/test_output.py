@@ -58,7 +58,10 @@ def test_armenian_prints_correctly_after_configuring_the_terminal(monkeypatch):
     stdout = _use_ansi_terminal(monkeypatch)
     configure_terminal()
     print_entry(ENTRY)
-    assert stdout.getvalue().decode("utf-8") == format_entry(ENTRY) + "\n"
+    assert (
+        stdout.getvalue().decode("utf-8").replace("\r\n", "\n")
+        == format_entry(ENTRY) + "\n"
+    )
 
 
 def test_without_configuring_armenian_would_not_print(monkeypatch):

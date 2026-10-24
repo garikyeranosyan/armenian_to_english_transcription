@@ -12,6 +12,7 @@ import pyaudiowpatch as pyaudio
 
 from live_hy_en.capture import AudioCapture, AudioFrame, SessionClock, Source
 from live_hy_en.config import Settings
+from live_hy_en.metrics import Metrics, PhraseTiming, Stage, format_summary
 from live_hy_en.output import TranscriptEntry, print_entry, print_message
 from live_hy_en.segmenter import Segmenter, SileroVad, SpeechDetector, SpeechSegment
 from live_hy_en.speakers import SpeakerTracker, WeSpeakerEncoder
@@ -43,7 +44,7 @@ class Models:
 class _Transcript:
     """A phrase after transcription, waiting for translation."""
 
-    segment: SpeechSegment
+    timing: PhraseTiming
     speaker: str
     armenian: str
 
@@ -65,6 +66,7 @@ class Pipeline:
     def __init__(
         self,
         models: Models,
+        clock: SessionClock,
         started_at: datetime,
         *,
         show: Callable[[TranscriptEntry], None] = print_entry,
@@ -73,12 +75,13 @@ class Pipeline:
         self._models = models
         self._started_at = started_at
         self._show = show
+        self.metrics = Metrics(clock)
         # Capture puts frames here; None tells a source's segmenter to finish.
         self.frames: dict[Source, queue.SimpleQueue[AudioFrame | None]] = {
             source: queue.SimpleQueue() for source in Source
         }
-        self._segments: queue.Queue[SpeechSegment | None] = queue.Queue(
-            max_queued_segments
+        self._segments: queue.Queue[tuple[SpeechSegment, PhraseTiming] | None] = (
+            queue.Queue(max_queued_segments)
         )
         self._transcripts: queue.Queue[_Transcript | None] = queue.Queue(
             MAX_QUEUED_TRANSCRIPTS
@@ -133,19 +136,21 @@ class Pipeline:
             self._queue_segment(segment)
 
     def _queue_segment(self, segment: SpeechSegment) -> None:
+        timing = self.metrics.start(segment.source, segment.start_s, segment.end_s)
         try:
-            self._segments.put_nowait(segment)
+            self._segments.put_nowait((segment, timing))
         except queue.Full:
             logger.warning(
                 "Transcription is falling behind; %s audio is waiting for it",
                 segment.source.value,
             )
-            self._segments.put(segment)
+            self._segments.put((segment, timing))
 
     def _transcribe_segments(self) -> None:
-        while (segment := self._segments.get()) is not None:
+        while (queued := self._segments.get()) is not None:
+            segment, timing = queued
             try:
-                transcript = self._transcribe(segment)
+                transcript = self._transcribe(segment, timing)
             except Exception:
                 # One bad phrase must not end the session; the next may be fine.
                 logger.exception(
@@ -157,27 +162,36 @@ class Pipeline:
             if transcript is not None:
                 self._transcripts.put(transcript)
 
-    def _transcribe(self, segment: SpeechSegment) -> _Transcript | None:
+    def _transcribe(
+        self, segment: SpeechSegment, timing: PhraseTiming
+    ) -> _Transcript | None:
+        self.metrics.mark(timing, Stage.TRANSCRIPTION_STARTED)
         armenian = self._models.transcriber.transcribe(segment.samples)
+        self.metrics.mark(timing, Stage.TRANSCRIBED)
         if armenian is None:
             return None
         # Labelled after transcription, so dropped noise never creates a speaker.
         speaker = self._models.speakers.assign_speaker(segment)
-        return _Transcript(segment, speaker, armenian)
+        self.metrics.mark(timing, Stage.LABELLED)
+        return _Transcript(timing, speaker, armenian)
 
     def _translate_transcripts(self) -> None:
         while (transcript := self._transcripts.get()) is not None:
             try:
                 self._show(self._translate(transcript))
+                self.metrics.finish(transcript.timing)
             except Exception:
                 logger.exception(
                     "Could not translate or print the phrase at %.1f s",
-                    transcript.segment.start_s,
+                    transcript.timing.start_s,
                 )
 
     def _translate(self, transcript: _Transcript) -> TranscriptEntry:
+        timing = transcript.timing
+        self.metrics.mark(timing, Stage.TRANSLATION_STARTED)
         english = self._models.translator.translate(transcript.armenian)
-        spoken_at = self._started_at + timedelta(seconds=transcript.segment.start_s)
+        self.metrics.mark(timing, Stage.TRANSLATED)
+        spoken_at = self._started_at + timedelta(seconds=timing.start_s)
         return TranscriptEntry(
             spoken_at, transcript.speaker, transcript.armenian, english
         )
@@ -188,7 +202,7 @@ def run(settings: Settings, audio: pyaudio.PyAudio) -> None:
     models = load_models()
     clock = SessionClock()
     # Phrase times are session seconds; this turns them into time of day.
-    pipeline = Pipeline(models, started_at=datetime.now())
+    pipeline = Pipeline(models, clock, started_at=datetime.now())
     captures = [
         AudioCapture(audio, device, source, clock, pipeline.frames[source])
         for device, source in (
@@ -214,3 +228,4 @@ def run(settings: Settings, audio: pyaudio.PyAudio) -> None:
         for capture in captures:
             capture.stop()
         pipeline.stop()
+    print_message(format_summary(pipeline.metrics.summary()))

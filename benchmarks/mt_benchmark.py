@@ -30,9 +30,9 @@ from asr_benchmark import (  # noqa: E402
     RESULTS_DIR,
     download,
     load_hf_token,
-    p95,
     parse_fleurs_tsv,
 )
+from live_hy_en.metrics import p95  # noqa: E402
 from live_hy_en.translator import (  # noqa: E402
     MT_MODELS,
     CTranslate2Translator,

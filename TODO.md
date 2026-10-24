@@ -43,3 +43,35 @@ Tasks agreed to be done later, with when they become due. Remove an entry once i
   5. Embed a few FLEURS clips: two halves of the same clip should score clearly higher cosine similarity than clips of different speakers.
 - **Check while doing it:**
   - Time `WeSpeakerEncoder.embed` on this laptop for 1, 3 and 10 s of audio: 10 s took 0.28 s on a 2-core machine, over the 0.2 s speaker budget.
+
+## 4. Fix wrong Armenian transcripts in live use
+
+- **When:** now; it blocks everything downstream (translation is only as good as its Armenian input).
+- **Why:** in live testing almost nothing is transcribed correctly, and some phrases are dropped with "Dropped transcript not in Armenian script". The ASR benchmark on clean read speech was already weak (large-v3-turbo: 46 % WER, 13.7 % CER), and live use adds microphone/call audio, conversational speech and our segmentation.
+- **Checklist — first find which stage is at fault:**
+  - [ ] Note where it fails: mic (`Me`), call side (`Speaker N`), or both; headphones or speakers; which call app.
+  - [ ] Check the captured audio itself: save a few live segments to WAV (a diagnostic script in `benchmarks/`, output git-ignored) and listen. Wrong pitch or speed means a sample-rate bug; distortion means clipping or a channel problem; very quiet means mic gain.
+  - [ ] Run those saved segments through `benchmarks/asr_benchmark.py`-style transcription offline: bad there too means the model; fine there means the live pipeline.
+  - [ ] Run the end-to-end replay (`pytest -m e2e -s`): FLEURS through the full pipeline vs. the whole-clip benchmark shows how much segmentation costs.
+  - [ ] Look at what the dropped "not in Armenian" texts were (Latin transliteration, Russian, English?) to see what Whisper falls back to.
+- **Checklist — fixes to try, measured on the same recordings:**
+  - [ ] Segmentation: cut long phrases at the quietest point instead of the hard 10 s cap (30 % of FLEURS segments are cut mid-speech); consider a longer cap and a longer minimum phrase (11 of 291 FLEURS segments were under 1 s).
+  - [ ] Decoding options: an Armenian `initial_prompt`, temperature fallback, `no_speech_threshold` / `log_prob_threshold`, beam size.
+  - [ ] Bigger model: `large-v3` (42.6 % WER, but 3.1 s mean per clip — over the 2 s budget on this GPU; check int8_float16).
+  - [ ] Armenian-specific models: community Whisper fine-tunes for Armenian (one-time CTranslate2 conversion), Meta MMS, SeamlessM4T (handover open item 5).
+  - [ ] Benchmark normalisation: map `եվ` → `և` so WER isn't inflated (handover open item 3).
+  - [ ] Record the chosen model and settings in `DECISIONS.md` and the README.
+
+## 5. Fix incorrect English translations
+
+- **When:** after item 4 is measured, since most translation errors come from wrong Armenian input.
+- **Why:** live translations are not correct. NLLB-600M scores chrF 62 on correct Armenian but only 44 on Whisper transcripts, so ASR errors dominate; segments cut mid-sentence also give the translator half sentences.
+- **Checklist — first separate MT errors from ASR errors:**
+  - [ ] Translate a few correct, typed Armenian sentences (conversational, not FLEURS) with the current model: if these are wrong too, the translator is at fault, not ASR.
+  - [ ] Compare live English lines against the Armenian line shown above them: wrong Armenian → item 4; right Armenian, wrong English → this item.
+- **Checklist — fixes to try:**
+  - [ ] Bigger or different model: NLLB-1.3B was ~3 chrF better than 600M; also MADLAD-400 and OPUS-MT (all converted in `models/mt/`). Run the MT benchmark (item 1) and check the 0.5 s budget.
+  - [ ] Repetition guard in `translate_batch` (e.g. `no_repeat_ngram_size`): NLLB looped 3 times in 400 outputs ("the grapes, the grapes, …"), M2M100 20 times.
+  - [ ] Normalise «» quotes before translation: NLLB turns them into "⁇".
+  - [ ] Translate whole sentences: avoid cutting phrases mid-sentence (item 4), or join a cut phrase with its continuation before translating.
+  - [ ] Record the chosen model in `DECISIONS.md` and the README.

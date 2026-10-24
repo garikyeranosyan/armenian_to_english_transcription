@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from live_hy_en.capture import SAMPLE_RATE_HZ  # noqa: E402
+from live_hy_en.metrics import p95  # noqa: E402
 from live_hy_en.transcriber import (  # noqa: E402
     FasterWhisperRecognizer,
     is_armenian,
@@ -194,12 +195,6 @@ def load_fleurs(limit: int, data_dir: Path = DATA_DIR) -> list[Clip]:
                 if len(clips) == limit:
                     break
     return clips
-
-
-def p95(values: Sequence[float]) -> float:
-    """Return the 95th-percentile value (nearest rank)."""
-    ordered = sorted(values)
-    return ordered[min(len(ordered) - 1, int(0.95 * len(ordered)))]
 
 
 def evaluate(transcribe: Transcribe, clips: Sequence[Clip]) -> list[ClipResult]:

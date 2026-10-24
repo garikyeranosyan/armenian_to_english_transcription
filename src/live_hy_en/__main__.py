@@ -6,6 +6,7 @@ from collections.abc import Sequence
 
 import pyaudiowpatch as pyaudio
 
+from live_hy_en import metrics
 from live_hy_en.capture import CaptureError
 from live_hy_en.config import (
     DeviceError,
@@ -27,6 +28,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     configure_terminal()
     logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
     args = parse_args(argv)
+    if args.debug:
+        # Only the latency view, not every library's debug output.
+        logging.getLogger(metrics.__name__).setLevel(logging.DEBUG)
     audio = pyaudio.PyAudio()
     try:
         if args.list_devices:

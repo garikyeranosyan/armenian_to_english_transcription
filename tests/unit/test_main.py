@@ -1,5 +1,7 @@
 """Tests for the entry point (PLAN.md §5.1: device list; clear errors; one command)."""
 
+import logging
+
 import pytest
 
 import live_hy_en.__main__ as entry_point
@@ -71,3 +73,14 @@ def test_setup_errors_are_shown_clearly_and_exit_with_1(
     assert entry_point.main([]) == 1
     assert capsys.readouterr().err == f"Error: {error}\n"
     assert FakePyAudio.instances[0].terminated
+
+
+@pytest.mark.parametrize(
+    ("argv", "level"), [([], logging.NOTSET), (["--debug"], logging.DEBUG)]
+)
+def test_debug_shows_only_the_latency_view(fakes, monkeypatch, argv, level):
+    metrics_logger = logging.getLogger("live_hy_en.metrics")
+    monkeypatch.setattr(metrics_logger, "level", logging.NOTSET)
+    entry_point.main(argv)
+    assert metrics_logger.level == level
+    assert logging.getLogger("faster_whisper").getEffectiveLevel() > logging.DEBUG

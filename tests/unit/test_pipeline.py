@@ -1,14 +1,16 @@
 """Tests for the pipeline (PLAN.md §5.1: both sources, live output, bounded delays)."""
 
 import threading
+import time as time_module
 from datetime import datetime, timedelta
 
 import numpy as np
 import pytest
 
 import live_hy_en.pipeline as pipeline_module
-from live_hy_en.capture import SAMPLE_RATE_HZ, AudioFrame, Source
+from live_hy_en.capture import SAMPLE_RATE_HZ, AudioFrame, SessionClock, Source
 from live_hy_en.config import AudioDevice, Settings
+from live_hy_en.metrics import Stage
 from live_hy_en.pipeline import Models, Pipeline, load_models, run
 from live_hy_en.segmenter import WINDOW_SAMPLES
 from live_hy_en.speakers import SpeakerTracker
@@ -122,7 +124,7 @@ def _feed(pipeline: Pipeline, frames: list[AudioFrame]) -> None:
 
 
 def _run(models: Models, shown: Shown, frames: list[AudioFrame], **options):
-    pipeline = Pipeline(models, STARTED_AT, show=shown, **options)
+    pipeline = Pipeline(models, SessionClock(), STARTED_AT, show=shown, **options)
     pipeline.start()
     _feed(pipeline, frames)
     pipeline.stop()
@@ -154,7 +156,7 @@ def test_different_call_side_voices_get_their_own_labels(shown):
 
 
 def test_entries_are_shown_while_the_session_runs(shown):
-    pipeline = Pipeline(_models(), STARTED_AT, show=shown)
+    pipeline = Pipeline(_models(), SessionClock(), STARTED_AT, show=shown)
     pipeline.start()
     _feed(pipeline, _phrase(Source.SYSTEM, 1.0, 0.2))
     # The mic sends nothing at all, and the call side is still shown.
@@ -217,6 +219,7 @@ def test_full_queue_waits_and_warns_but_drops_nothing(shown, caplog):
     ]
     pipeline = Pipeline(
         _models(recognizer=SlowRecognizer()),
+        SessionClock(),
         STARTED_AT,
         show=shown,
         max_queued_segments=1,
@@ -257,6 +260,22 @@ def test_translation_overlaps_the_next_transcription(shown):
     )
     _run(models, shown, frames)
     assert overlapped[0] is True
+
+
+def test_every_shown_phrase_is_timed_through_each_stage(shown, caplog):
+    caplog.set_level("DEBUG", logger="live_hy_en.metrics")
+    # The frames below are from 1 s to 5 s, so start the clock past them.
+    clock = SessionClock(now=lambda: 100.0 + time_module.monotonic())
+    pipeline = Pipeline(_models(), clock, STARTED_AT, show=shown)
+    pipeline.start()
+    _feed(pipeline, _phrase(Source.MIC, 1.0, 0.2) + _phrase(Source.SYSTEM, 3.0, 0.3))
+    pipeline.stop()
+    summary = pipeline.metrics.summary()
+    assert summary.phrase_count == len(shown.entries) == 2
+    assert summary.over_limit_count == 0
+    lines = [r.getMessage() for r in caplog.records if r.name == "live_hy_en.metrics"]
+    assert len(lines) == 2
+    assert all(stage.value in line for line in lines for stage in Stage)
 
 
 class FakeWarmable:
@@ -326,3 +345,4 @@ def test_run_captures_both_devices_until_ctrl_c(monkeypatch, capsys):
     output = capsys.readouterr().out
     assert "Listening to 'Headset Microphone' and 'Speakers [Loopback]'" in output
     assert "Stopping" in output
+    assert "No phrases were shown" in output
