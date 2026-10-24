@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class ModelLoadError(Exception):
-    """The speech recognition model could not be loaded."""
+    """A model could not be loaded or failed its first run."""
 
 
 class SpeechRecognizer(Protocol):
@@ -57,13 +57,14 @@ def add_cuda_dll_dirs() -> None:
             os.environ["PATH"] = f"{dll_dir}{os.pathsep}{path}"
 
 
-def _has_cuda_gpu() -> bool:
+def has_cuda_gpu() -> bool:
+    """Return whether CTranslate2 sees a CUDA GPU, warning when it doesn't."""
     # Only called after add_cuda_dll_dirs(), which must run before this import.
     import ctranslate2
 
     if ctranslate2.get_cuda_device_count() > 0:
         return True
-    logger.warning("No CUDA GPU found; transcribing on the CPU, which is slower.")
+    logger.warning("No CUDA GPU found; running models on the CPU, which is slower.")
     return False
 
 
@@ -83,7 +84,7 @@ class FasterWhisperRecognizer:
         from faster_whisper import WhisperModel
 
         if device is None:
-            device = "cuda" if _has_cuda_gpu() else "cpu"
+            device = "cuda" if has_cuda_gpu() else "cpu"
         if compute_type is None:
             compute_type = GPU_COMPUTE_TYPE if device == "cuda" else CPU_COMPUTE_TYPE
         try:

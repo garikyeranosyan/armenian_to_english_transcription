@@ -34,7 +34,8 @@ from live_hy_en.transcriber import (  # noqa: E402
     is_armenian,
 )
 
-FLEURS_URL = "https://huggingface.co/datasets/google/fleurs/resolve/main/data/hy_am"
+FLEURS_BASE_URL = "https://huggingface.co/datasets/google/fleurs/resolve/main/data"
+FLEURS_URL = f"{FLEURS_BASE_URL}/hy_am"
 FLEURS_SPLIT = "test"
 BENCHMARK_DIR = Path(__file__).resolve().parent
 DATA_DIR = BENCHMARK_DIR / "data" / "fleurs_hy_am"
@@ -195,6 +196,12 @@ def load_fleurs(limit: int, data_dir: Path = DATA_DIR) -> list[Clip]:
     return clips
 
 
+def p95(values: Sequence[float]) -> float:
+    """Return the 95th-percentile value (nearest rank)."""
+    ordered = sorted(values)
+    return ordered[min(len(ordered) - 1, int(0.95 * len(ordered)))]
+
+
 def evaluate(transcribe: Transcribe, clips: Sequence[Clip]) -> list[ClipResult]:
     """Transcribe every clip, timing each one; the first call warms up."""
     transcribe(clips[0].samples)
@@ -217,7 +224,7 @@ def summarize(model: str, results: Sequence[ClipResult]) -> Summary:
         cer=cer,
         wrong_script_count=sum(not is_armenian(r.hypothesis) for r in results),
         mean_s=statistics.fmean(times_s),
-        p95_s=times_s[min(len(times_s) - 1, int(0.95 * len(times_s)))],
+        p95_s=p95(times_s),
         max_s=times_s[-1],
         over_budget_count=sum(t > ASR_BUDGET_S for t in times_s),
         real_time_factor=sum(times_s) / sum(r.clip.duration_s for r in results),
