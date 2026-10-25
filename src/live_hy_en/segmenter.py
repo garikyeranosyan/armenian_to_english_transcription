@@ -65,6 +65,15 @@ class SpeechSegment:
     start_s: float
     end_s: float
     samples: np.ndarray
+    # How many of `samples` come before the speech starts.
+    lead_in_samples: int = 0
+
+    @property
+    def speech_samples(self) -> np.ndarray:
+        """The speech alone, without the padding around it."""
+        speech_length = round((self.end_s - self.start_s) * SAMPLE_RATE_HZ)
+        start = self.lead_in_samples
+        return self.samples[start : start + speech_length]
 
 
 class SpeechDetector(Protocol):
@@ -205,6 +214,7 @@ class Segmenter:
     def _end_segment(self) -> list[SpeechSegment]:
         """Emit the open segment with its padding, unless its speech is too short."""
         speech_windows = self._speech_window_count - self._pad_window_count
+        lead_in_samples = self._pad_window_count * WINDOW_SAMPLES
         kept_windows = self._windows[
             : self._speech_window_count + POST_SPEECH_PAD_WINDOWS
         ]
@@ -219,5 +229,6 @@ class Segmenter:
                 start_s=self._segment_start_s,
                 end_s=self._segment_start_s + speech_windows * WINDOW_S,
                 samples=np.concatenate(kept_windows),
+                lead_in_samples=lead_in_samples,
             )
         ]

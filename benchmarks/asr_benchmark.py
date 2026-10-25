@@ -144,7 +144,7 @@ def parse_fleurs_tsv(text: str) -> dict[str, tuple[str, str]]:
 
 
 def read_wav(data: bytes) -> np.ndarray:
-    """Decode WAV bytes in any sample format to mono float32 at SAMPLE_RATE_HZ."""
+    """Decode WAV (or MP3) bytes to mono float32 at SAMPLE_RATE_HZ."""
     audio, rate_hz = soundfile.read(io.BytesIO(data), dtype="float32", always_2d=True)
     samples = audio.mean(axis=1)
     if rate_hz != SAMPLE_RATE_HZ:

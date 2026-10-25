@@ -112,6 +112,17 @@ def test_soft_start_of_the_first_word_is_kept(segmenter):
     assert soft_samples == round(0.2 * SAMPLE_RATE_HZ)
 
 
+def test_speech_samples_leave_out_the_padding(segmenter):
+    audio = np.concatenate([_silence(1), _speech(2), _silence(1)])
+    [segment] = _run(segmenter, _frames(audio))
+    speech = segment.speech_samples
+    assert speech.size / SAMPLE_RATE_HZ == pytest.approx(
+        segment.end_s - segment.start_s
+    )
+    # All of the speech, and at most a window of silence at either end.
+    assert np.count_nonzero(speech) == round(2 * SAMPLE_RATE_HZ)
+
+
 def test_padding_does_not_delay_the_end_time(segmenter):
     # Latency is measured from end_s, so it must stay where the speech stopped.
     audio = np.concatenate([_speech(2), _silence(1)])
