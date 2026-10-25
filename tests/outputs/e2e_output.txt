@@ -1,42 +1,80 @@
-============================= test session starts =============================
-platform win32 -- Python 3.14.3, pytest-8.4.2, pluggy-1.7.0 -- C:\Users\Work\Desktop\armenian_to_english_transcription\.venv\Scripts\python.exe
-cachedir: .pytest_cache
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-8.4.2, pluggy-1.7.0
 rootdir: C:\Users\Work\Desktop\armenian_to_english_transcription
 configfile: pyproject.toml
 testpaths: tests
 plugins: anyio-4.15.1
-collecting ... collected 168 items / 166 deselected / 2 selected
+collected 179 items / 177 deselected / 2 selected
 
-tests/e2e/test_replay.py::test_alternating_call_is_transcribed_live_within_the_limit Loading modelsΓÇª
+tests\e2e\test_replay.py Loading modelsà
 
 === Alternating call ===
-[   1.5-   8.2 s] mic    1 entry: Me: It gave us the train, the car, and many other transportation devices.
-[   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand, marriage and divorce are natural in many parts of the world, and year-round vows are largely randomly arranged.
-[  21.1-  29.0 s] system 1 entry: Speaker 2: First, bull horses wear shoes with a riding crotch and a tight-fitting shoe.
-[  30.5-  46.4 s] mic    2 entries: Me: That's the job for many countries, and the coin carvings are the latest examples of the work of a Canadian hairdresser. | Me: That's five and a hundred dollars worth of paper money.
-[  47.9-  61.5 s] system 2 entries: Speaker 1: Blogs can also be a source of inspiration when it comes to increasing student literacy. While students often start their blog search with cloud computing and tutoring. | Speaker 1: The presence of attackers is a tricky thing to change.
-[  63.0-  92.1 s] system 3 entries: Speaker 2: Researchers at Christon Zoo and the Upsal Zoo in Washington, D.C., found that the new species is only two generations apart. | Speaker 2: They've been hypothesized to be volcanic, but it's been suggested that this exercise took much longer because of the darwinian endemic serene medium. | Speaker 2: There was a multiplication between the rostris of the conic serene and the conic serene of the unfolding conic serene.
-[  93.6- 105.8 s] mic    1 entry: Me: One of the most common forms of photorealistic sculpture in the world is the 35 mm miniature, which is the predominantly silhouetted silhouette, from the era of analogue silhouettes.
-[ 107.3- 117.1 s] system 1 entry: Speaker 3: Moldavia's capital city is Chi╚Öin─âu, the local language is Romanian, but Russian is widely spoken.
-[ 118.6- 135.5 s] system 2 entries: Speaker 3: In its early days, it was broadcast only on a long-running community radio station, Toji et Rajo, which was hacked. | Speaker 3: which focused on zero-zero programs.
-[ 137.0- 153.0 s] mic    2 entries: Me: He was also engaged in the carving of coins for many countries, the latest examples of modern art, portraits of an ancient sculptor, a new old Canadian. | Me: And a hundred dollars of tears in the face of the boys.
-[ 154.5- 181.6 s] system 3 entries: Speaker 3: Most of the interpretations of technological determinism share the two main secrets behind the development of technology itself. | Speaker 3: A path that is largely outside of cultural or political influence, and a technological one, in turn, has implications. | Speaker 3: It's based on societies, not societies.
-[ 183.1- 192.8 s] system 1 entry: Speaker 2: In just two terraces, American and French bedspreads liberated the Southern Route and changed the route to the German one.
-WER 45.8%, CER 11.2% over 12 clips
-Latency over 20 phrases: p50 1.24 s, p95 2.29 s, max 2.29 s; 0 over the 5 s limit.
-PASSED
-tests/e2e/test_replay.py::test_both_sides_talking_at_once_stay_within_the_limit 
+[   1.5-   8.2 s] mic    1 entry: Me: It's been a big hit with the train, the car, and a lot of other transportation.
+[   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand, ice and snow conditions are normal in many countries, and traffic continues almost continuously throughout the year.
+[  21.1-  29.0 s] system 1 entry: Speaker 2: First, thoroughbreds wear shoes that are designed for riding and smooth, rather narrow.
+[  30.5-  46.4 s] mic    2 entries: Me: He's been looking at the excavations of coins for many countries, the latest examples of work including the prime minister. | Me: The portraits on the face of the new Canadian five-hundred dollar bill.
+[  47.9-  61.5 s] system 2 entries: Speaker 1: Blogs can also be helpful in improving student literacy. | Speaker 1: The literary reader's representative changes that.
+[  63.0-  92.1 s] system 4 entries: Speaker 2: Researchers at Princeton University and Uppsala University in Sweden reported: | Speaker 2: That new species evolved in just two generations, although it's assumed that this process took much longer thanks to Darwin. | Speaker 2: Endemic to serene, medium-sized terrestrial serene, and unbreakable cactus serene. | Speaker 2: The multiplication between the serinoscorticosteroids.
+[  93.6- 105.8 s] mic    2 entries: Me: For example, the most common format of still photography in the world is 35 millimeters, which is the dominant film size. | Me: Near the end of the era of analog films.
+[ 107.3- 117.1 s] system 1 entry: Speaker 3: The capital of Moldova is Kishtinev, the local language is Romanian, but Russian is widely spoken.
+[ 118.6- 135.5 s] system 2 entries: Speaker 3: In its early days, the show only aired on long-running Internet radio. | Speaker 3: TojiNet radio, which focused on talk-show programs.
+[ 137.0- 153.0 s] mic    3 entries: Me: He was also involved in the excavation of banknotes for many countries, the latest examples of his work. | Me: Including portraits of the prime minister, new Canadian $5,100. | Me: The face of the bills.
+[ 154.5- 181.6 s] system 4 entries: Speaker 3: Most interpretations of technological determinism share two main sections. | Speaker 3: That the development of technology itself is moving in a direction far beyond cultural or political influence. | Speaker 3: And technology, in turn, has an impact on individual societies rather than... | Speaker 3: It's based on society.
+[ 183.1- 192.8 s] system 1 entry: Speaker 2: In just two weeks, American and French independent troops had liberated southern France and were moving toward Germany.
+WER 13.7%, CER 7.7% over 12 clips
+Latency over 24 phrases: p50 1.28 s, p95 2.44 s, max 16.39 s; 1 over the 5 s limit.
+F
 === Both sides at once ===
-[   1.5-   7.9 s] mic    1 entry: Me: Athletic friendly wrestlers also paid tribute to the pool.
-[   1.5-   8.2 s] system 1 entry: Speaker 2: If you want to be close to the present, you have to go in the morning, as if you're going to be close to the drought.
-[   9.7-  15.2 s] mic    1 entry: Me: You can burn the place by scrolling through carrot boards or scrolls.
-[   9.7-  19.0 s] system 1 entry: Speaker 3: Unfortunately, the traffic flow has studied the hard way to estimate a driver's credit score by a hundred bucks.
-[  20.5-  31.3 s] mic    1 entry: Me: The number of photographers was so large that not all of them were able to get access to the transmitter frequency in the thin Super Petros case.
-[  20.5-  28.4 s] system 1 entry: Speaker 3: They are the largest group of cats that live in large groups called predators.
-[  32.8-  45.2 s] mic    2 entries: Me: The Athletic Hall of Fame supports the letter to the Olympic Committee in Mississauga and acknowledges that the Olympic family definitely needs to promote all of our athletes. | Me: Let's not pollute the environment.
-[  32.8-  42.8 s] system 2 entries: Speaker 3: The plants get their food through the synthesis of the voodoo. | Speaker 3: They also provide shadows.
-WER 48.7%, CER 8.7% over 8 clips
-Latency over 10 phrases: p50 1.21 s, p95 2.84 s, max 2.84 s; 0 over the 5 s limit.
-PASSED
+[   1.5-   7.9 s] mic    1 entry: Me: The gymnasts also paid tribute to the pool.
+[   1.5-   8.2 s] system 1 entry: Speaker 2: If you want to be close to the concert, you have to get in early to hit the tent, close to the music.
+[   9.7-  15.2 s] mic    1 entry: Me: - Don't spoil the place by running signs or signs on buildings.
+[   9.7-  19.0 s] system 1 entry: Speaker 3: Unfortunately, the flow of traffic has been difficult to study because the driver's behavior is impossible to predict 100 percent.
+[  20.5-  31.3 s] mic    2 entries: Me: The number of paintings was so great that not everyone was able to see St. Peter's painting. | Me: Access to the ceremony of dispatch being carried out.
+[  20.5-  28.4 s] system 1 entry: Speaker 3: Lions are the largest group of cats that live in large groups called predators.
+[  32.8-  45.2 s] mic    2 entries: Me: Every gymnastics organization supports joining the letter from the state Olympic Committee and recognizing that the Olympic family definitely needs to encourage all of our athletes. | Me: It's a safe environment.
+[  32.8-  42.8 s] system 1 entry: Speaker 3: Plants get their food through photosynthesis, and they also provide shade.
+WER 12.0%, CER 2.5% over 8 clips
+Latency over 10 phrases: p50 1.26 s, p95 1.73 s, max 1.73 s; 0 over the 5 s limit.
+.
 
-================ 2 passed, 166 deselected in 253.04s (0:04:13) ================
+================================== FAILURES ===================================
+_________ test_alternating_call_is_transcribed_live_within_the_limit __________
+
+models = Models(transcriber=<live_hy_en.transcriber.Transcriber object at 0x0000028B403446E0>, speakers=<live_hy_en.speakers.Sp...live_hy_en.translator.Translator object at 0x0000028B40344EC0>, make_detector=<class 'live_hy_en.segmenter.SileroVad'>)
+clips = [Clip(clip_id='1889', samples=array([0.00000000e+00, 0.00000000e+00, 0.00000000e+00, ...,\n       6.55055046e-05, 1.092...\u0580\u056b\u0576\u0578\u057d\u056b, \u0574\u056b\u057b\u056b\u0576 \u0579\u0561\u0583\u057d\u056b \u0570\u0578\u0572\u0561\u0575\u056b\u0576 \u057d\u0565\u0580\u056b\u0576\u0578\u057d\u056b \u0587 \u0579\u057e\u0578\u0572 \u056f\u0561\u056f\u057f\u0578\u0582\u057d \u057d\u0565\u0580\u056b\u0576\u0578\u057d\u056b, \u057d\u0565\u0580\u056b\u0578\u0576\u057d \u056f\u0578\u0576\u056b\u0580\u0578\u057d\u057f\u0580\u056b\u057d\u056b \u0574\u056b\u057b\u0587 \u057f\u0565\u0572\u056b \u0578\u0582\u0576\u0565\u0581\u0561\u056e \u0562\u0561\u0566\u0574\u0561\u0581\u0574\u0561\u0576\u0589'), ...]
+
+    def test_alternating_call_is_transcribed_live_within_the_limit(models, clips):
+        placed, audio, cursor_s = [], [], GAP_S
+        for index, clip in enumerate(clips[:CLIP_COUNT]):
+            # One in three phrases is mine; the rest come from the call.
+            source = Source.MIC if index % 3 == 0 else Source.SYSTEM
+            placed.append(
+                PlacedClip(source, cursor_s, cursor_s + clip.duration_s, clip.reference)
+            )
+            audio.append(clip.samples)
+            cursor_s += clip.duration_s + GAP_S
+        shown, pipeline, playback_end_s = _replay(models, _tracks(placed, audio))
+        _report("Alternating call", placed, shown, pipeline)
+    
+        assert all(_entries_of(clip, shown) for clip in placed), "a phrase was lost"
+        for item in shown:
+            expected_me = any(
+                clip.source is Source.MIC
+                and clip.start_s - CLIP_MARGIN_S <= item.start_s <= clip.end_s
+                for clip in placed
+            )
+            assert (item.entry.speaker == MIC_LABEL) == expected_me
+            assert item.entry.english
+        # Live: entries appear while the call goes on, not at the end.
+        assert sum(item.shown_s < playback_end_s for item in shown) >= len(shown) - 2
+        summary = pipeline.metrics.summary()
+>       assert summary.max_s <= MAX_LATENCY_S
+E       assert 16.385371300002816 <= 5.0
+E        +  where 16.385371300002816 = LatencySummary(phrase_count=24, p50_s=1.2830886999960605, p95_s=2.437248100001341, max_s=16.385371300002816, over_limit_count=1).max_s
+
+tests\e2e\test_replay.py:170: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  live_hy_en.metrics:metrics.py:120 Slow phrase, limit 5 s: system phrase at 87.1 s: 16.39 s (pause detection 15.84, queue 0.00, transcription 0.35, speaker 0.04, translation queue 0.00, translation 0.15, printing 0.00)
+=========================== short test summary info ===========================
+FAILED tests/e2e/test_replay.py::test_alternating_call_is_transcribed_live_within_the_limit
+=========== 1 failed, 1 passed, 177 deselected in 252.22s (0:04:12) ===========
