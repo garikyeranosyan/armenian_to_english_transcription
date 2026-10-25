@@ -1,0 +1,42 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-8.4.2, pluggy-1.7.0 -- C:\Users\Work\Desktop\armenian_to_english_transcription\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Work\Desktop\armenian_to_english_transcription
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collecting ... collected 168 items / 166 deselected / 2 selected
+
+tests/e2e/test_replay.py::test_alternating_call_is_transcribed_live_within_the_limit Loading modelsΓÇª
+
+=== Alternating call ===
+[   1.5-   8.2 s] mic    1 entry: Me: It gave us the train, the car, and many other transportation devices.
+[   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand, marriage and divorce are natural in many parts of the world, and year-round vows are largely randomly arranged.
+[  21.1-  29.0 s] system 1 entry: Speaker 2: First, bull horses wear shoes with a riding crotch and a tight-fitting shoe.
+[  30.5-  46.4 s] mic    2 entries: Me: That's the job for many countries, and the coin carvings are the latest examples of the work of a Canadian hairdresser. | Me: That's five and a hundred dollars worth of paper money.
+[  47.9-  61.5 s] system 2 entries: Speaker 1: Blogs can also be a source of inspiration when it comes to increasing student literacy. While students often start their blog search with cloud computing and tutoring. | Speaker 1: The presence of attackers is a tricky thing to change.
+[  63.0-  92.1 s] system 3 entries: Speaker 2: Researchers at Christon Zoo and the Upsal Zoo in Washington, D.C., found that the new species is only two generations apart. | Speaker 2: They've been hypothesized to be volcanic, but it's been suggested that this exercise took much longer because of the darwinian endemic serene medium. | Speaker 2: There was a multiplication between the rostris of the conic serene and the conic serene of the unfolding conic serene.
+[  93.6- 105.8 s] mic    1 entry: Me: One of the most common forms of photorealistic sculpture in the world is the 35 mm miniature, which is the predominantly silhouetted silhouette, from the era of analogue silhouettes.
+[ 107.3- 117.1 s] system 1 entry: Speaker 3: Moldavia's capital city is Chi╚Öin─âu, the local language is Romanian, but Russian is widely spoken.
+[ 118.6- 135.5 s] system 2 entries: Speaker 3: In its early days, it was broadcast only on a long-running community radio station, Toji et Rajo, which was hacked. | Speaker 3: which focused on zero-zero programs.
+[ 137.0- 153.0 s] mic    2 entries: Me: He was also engaged in the carving of coins for many countries, the latest examples of modern art, portraits of an ancient sculptor, a new old Canadian. | Me: And a hundred dollars of tears in the face of the boys.
+[ 154.5- 181.6 s] system 3 entries: Speaker 3: Most of the interpretations of technological determinism share the two main secrets behind the development of technology itself. | Speaker 3: A path that is largely outside of cultural or political influence, and a technological one, in turn, has implications. | Speaker 3: It's based on societies, not societies.
+[ 183.1- 192.8 s] system 1 entry: Speaker 2: In just two terraces, American and French bedspreads liberated the Southern Route and changed the route to the German one.
+WER 45.8%, CER 11.2% over 12 clips
+Latency over 20 phrases: p50 1.24 s, p95 2.29 s, max 2.29 s; 0 over the 5 s limit.
+PASSED
+tests/e2e/test_replay.py::test_both_sides_talking_at_once_stay_within_the_limit 
+=== Both sides at once ===
+[   1.5-   7.9 s] mic    1 entry: Me: Athletic friendly wrestlers also paid tribute to the pool.
+[   1.5-   8.2 s] system 1 entry: Speaker 2: If you want to be close to the present, you have to go in the morning, as if you're going to be close to the drought.
+[   9.7-  15.2 s] mic    1 entry: Me: You can burn the place by scrolling through carrot boards or scrolls.
+[   9.7-  19.0 s] system 1 entry: Speaker 3: Unfortunately, the traffic flow has studied the hard way to estimate a driver's credit score by a hundred bucks.
+[  20.5-  31.3 s] mic    1 entry: Me: The number of photographers was so large that not all of them were able to get access to the transmitter frequency in the thin Super Petros case.
+[  20.5-  28.4 s] system 1 entry: Speaker 3: They are the largest group of cats that live in large groups called predators.
+[  32.8-  45.2 s] mic    2 entries: Me: The Athletic Hall of Fame supports the letter to the Olympic Committee in Mississauga and acknowledges that the Olympic family definitely needs to promote all of our athletes. | Me: Let's not pollute the environment.
+[  32.8-  42.8 s] system 2 entries: Speaker 3: The plants get their food through the synthesis of the voodoo. | Speaker 3: They also provide shadows.
+WER 48.7%, CER 8.7% over 8 clips
+Latency over 10 phrases: p50 1.21 s, p95 2.84 s, max 2.84 s; 0 over the 5 s limit.
+PASSED
+
+================ 2 passed, 166 deselected in 253.04s (0:04:13) ================

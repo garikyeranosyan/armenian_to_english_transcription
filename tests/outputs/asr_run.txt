@@ -1,0 +1,12 @@
+200 FLEURS hy_am clips, 38.5 min of audio
+
+large-v3-turbo: loading ...
+large-v3-turbo: transcripts saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\asr_large-v3-turbo.csv
+
+whisper-turbo-armenian: loading ...
+whisper-turbo-armenian: transcripts saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\asr_whisper-turbo-armenian.csv
+
+| Model | Clips | WER | CER | Wrong script | Mean s | p95 s | Max s | > 2 s | RTF |
+|---|---|---|---|---|---|---|---|---|---|
+| large-v3-turbo | 200 | 45.9% | 13.6% | 0 | 0.64 | 0.85 | 0.95 | 0 | 0.055 |
+| whisper-turbo-armenian | 200 | 19.5% | 10.3% | 0 | 0.66 | 0.87 | 1.01 | 0 | 0.057 |

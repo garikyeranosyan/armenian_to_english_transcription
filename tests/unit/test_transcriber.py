@@ -1,5 +1,6 @@
 """Tests for transcription (PLAN.md §3 module 5, §6 risk 1: wrong or empty text)."""
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import ctranslate2
@@ -128,7 +129,8 @@ def _gpu_count(monkeypatch, count: int) -> None:
 def test_default_model_is_the_benchmark_choice(fake_whisper, monkeypatch):
     _gpu_count(monkeypatch, 1)
     FasterWhisperRecognizer()
-    assert fake_whisper.instances[0].model == ASR_MODEL == "large-v3-turbo"
+    assert fake_whisper.instances[0].model == ASR_MODEL
+    assert Path(ASR_MODEL).name == "whisper-turbo-armenian"
 
 
 def test_any_model_can_be_plugged_in(fake_whisper, monkeypatch):
@@ -175,5 +177,5 @@ def test_load_failure_gives_clear_error(monkeypatch):
         raise RuntimeError("CUDA driver version is insufficient")
 
     monkeypatch.setattr(faster_whisper, "WhisperModel", failing_model)
-    with pytest.raises(ModelLoadError, match="large-v3-turbo.*on cuda.*CUDA driver"):
+    with pytest.raises(ModelLoadError, match="turbo-armenian.*on cuda.*CUDA driver"):
         FasterWhisperRecognizer(device="cuda")

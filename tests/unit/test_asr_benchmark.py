@@ -19,6 +19,7 @@ from asr_benchmark import (
     evaluate,
     format_table,
     load_hf_token,
+    model_label,
     normalize,
     parse_fleurs_tsv,
     read_wav,
@@ -49,6 +50,22 @@ def test_normalize_keeps_in_word_question_mark_from_splitting_the_word():
 
 def test_normalize_treats_both_spellings_of_yev_alike():
     assert normalize("Երևան եւ Գյումրի") == normalize("Երեւան և Գյումրի")
+
+
+def test_normalize_treats_whispers_yev_spelling_as_the_same_word():
+    # Whisper writes "and" as "եվ"; FLEURS writes "և".
+    assert normalize("Երեվան եվ Գյումրի") == normalize("Երևան և Գյումրի")
+
+
+def test_model_label_names_results_by_model_and_compute_type(tmp_path):
+    local_model = tmp_path / "whisper-turbo-armenian"
+    local_model.mkdir()
+    assert model_label("large-v3-turbo", None) == "large-v3-turbo"
+    assert model_label("org/whisper-hy", None) == "org_whisper-hy"
+    assert model_label(str(local_model), None) == "whisper-turbo-armenian"
+    assert model_label(str(local_model), "int8_float16") == (
+        "whisper-turbo-armenian_int8_float16"
+    )
 
 
 @pytest.mark.parametrize(
