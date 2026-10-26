@@ -4,10 +4,13 @@ rootdir: C:\Users\Work\Desktop\armenian_to_english_transcription
 configfile: pyproject.toml
 testpaths: tests
 plugins: anyio-4.15.1
-collected 193 items / 191 deselected / 2 selected
+collected 202 items / 198 deselected / 4 selected
 
-tests\e2e\test_replay.py Loading modelsà
+tests\e2e\test_offline.py Loading modelsà
 
+Offline translation: It gave rise to the train, the car, and many other means of transportation.
+.
+tests\e2e\test_replay.py 
 === Alternating call ===
 [   1.5-   8.2 s] mic    1 entry: Me: It gave rise to the train, the car, and many other means of transportation.
 [   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand, ice and snow conditions are natural in many countries, and year-round traffic continues largely uninterrupted.
@@ -22,7 +25,13 @@ tests\e2e\test_replay.py Loading modelsà
 [ 154.5- 181.6 s] system 4 entries: Speaker 3: Most interpretations of technological determinism share two main conundrums. | Speaker 3: That technological development is itself moving in a direction far beyond cultural or political influence. | Speaker 3: And technology, in turn, has an impact on individual societies rather than... | Speaker 3: It's because of society.
 [ 183.1- 192.8 s] system 1 entry: Speaker 2: Within two weeks, American and French independent troops had liberated southern France and turned toward Germany.
 WER 13.7%, CER 7.7% over 12 clips
-Latency over 24 phrases: p50 1.32 s, p95 1.70 s, max 2.18 s; 0 over the 5 s limit.
+Latency over 24 phrases: p50 1.37 s, p95 1.74 s, max 1.91 s; 0 over the 5 s limit.
+  pause detection  p95  0.87 s, budget 0.50 s: over, accepted
+  queue            p95  0.00 s, budget 0.30 s: ok
+  speaker          p95  0.12 s, budget 0.20 s: ok
+  transcription    p95  0.97 s, budget 2.00 s: ok
+  translation      p95  0.50 s, budget 0.50 s: ok
+  printing         p95  0.00 s, budget 0.05 s: ok
 .
 === Both sides at once ===
 [   1.5-   7.9 s] mic    1 entry: Me: His fellow athletes also paid their respects to the moon.
@@ -34,7 +43,28 @@ Latency over 24 phrases: p50 1.32 s, p95 1.70 s, max 2.18 s; 0 over the 5 s limi
 [  32.8-  45.2 s] mic    2 entries: Me: The International Gymnastics Federation supports joining the letter of the United States Olympic Committee and recognizes that the Olympic family clearly needs to encourage all of our athletes. | Me: A safe environment.
 [  32.8-  42.8 s] system 1 entry: Speaker 3: Plants get their food through photosynthesis, and they also provide shade.
 WER 12.0%, CER 2.5% over 8 clips
-Latency over 10 phrases: p50 1.60 s, p95 2.01 s, max 2.01 s; 0 over the 5 s limit.
+Latency over 10 phrases: p50 1.60 s, p95 1.95 s, max 1.95 s; 0 over the 5 s limit.
+  pause detection  p95  0.70 s, budget 0.50 s: over, accepted
+  queue            p95  0.25 s, budget 0.30 s: ok
+  speaker          p95  0.10 s, budget 0.20 s: ok
+  transcription    p95  0.97 s, budget 2.00 s: ok
+  translation      p95  0.96 s, budget 0.50 s: over, accepted
+  printing         p95  0.00 s, budget 0.05 s: ok
+.
+=== Long monologue (47 s) ===
+[   2.6 s] Speaker 3: Everything in the universe is made of matter, and all matter is made of tiny particles called atoms.
+[  11.2 s] Speaker 1: In particular, it has been claimed that you can tell if a person with diabetes is lying by correctly interpreting micro-expressions.
+[  19.9 s] Speaker 1: This will allow gamers to control actions and movements in video games by moving the device around in a notebook.
+[  29.2 s] Speaker 1: It's thinner in water and thicker in mountains.
+[  33.4 s] Speaker 2: On the other hand, ice and snow conditions are natural in many countries and healthy all year round, with traffic continuing in a largely continuous fashion.
+[  43.3 s] Speaker 3: Do not disturb the site by carving signs or inscriptions on structures.
+Latency over 6 phrases: p50 1.56 s, p95 1.72 s, max 1.72 s; 0 over the 5 s limit.
+  pause detection  p95  0.86 s, budget 0.50 s: over, accepted
+  queue            p95  0.00 s, budget 0.30 s: ok
+  speaker          p95  0.10 s, budget 0.20 s: ok
+  transcription    p95  0.92 s, budget 2.00 s: ok
+  translation      p95  0.51 s, budget 0.50 s: over, accepted
+  printing         p95  0.00 s, budget 0.05 s: ok
 .
 
-================ 2 passed, 191 deselected in 252.98s (0:04:12) ================
+================ 4 passed, 198 deselected in 304.02s (0:05:04) ================

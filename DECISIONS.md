@@ -148,6 +148,12 @@ Each entry uses this format:
 - **Reason:** gets the end-to-end program working first (`PLAN.md` risk 13: build a thin slice first), then picks the model with the full latency picture.
 - **Alternatives considered:** running the benchmark before building the remaining modules.
 
+### 6. Translation model is NLLB-200 distilled 1.3B, over its 0.5 s share (2026-10-26)
+
+- **Decision:** `MT_MODEL` is `nllb-200-distilled-1.3B`, replacing the provisional choice in entry 5, and accepting that translation alone takes longer than its 0.5 s share of the latency budget: mean 0.57 s, p95 0.87 s and max 1.41 s per FLEURS sentence on this laptop's GPU (263 of 400 translations over 0.5 s).
+- **Reason:** it is the most accurate candidate on 200 FLEURS sentences: chrF++ 55.0 from our ASR transcripts (`whisper-turbo-armenian`) and 63.2 from correct Armenian. The hard rule is the 5 s limit per phrase, and the end-to-end replay with this model stays far inside it (max 2.18 s, p95 1.70 s and 2.01 s), because live phrases are shorter than whole FLEURS sentences and translation overlaps the next transcription.
+- **Alternatives considered:** `nllb-200-distilled-600M` (fits the share at p95 0.43 s with 4 of 400 over, but chrF++ 52.6); `m2m100_1.2B` (chrF++ 42.4); `opus-mt-hy-en` (chrF++ 33.2, 11 of 200 over 0.5 s); `madlad400-3b-mt` (would not load on this laptop's GPU); NLLB-1.3B in `int8_float16` (probably faster, not measured).
+
 ## speakers.py
 
 ### 1. WeSpeaker ResNet34 voiceprints run with onnxruntime (2026-10-24)

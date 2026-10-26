@@ -74,6 +74,15 @@ def test_summary_reports_p50_p95_max_and_phrases_over_the_limit(manual):
     assert summary.over_limit_count == 1
 
 
+def test_shown_phrases_keep_their_stage_timings_for_tests(manual):
+    metrics = Metrics(manual.clock)
+    first = _phrase(manual, metrics, 10.0, TYPICAL_STEPS_S)
+    second = _phrase(manual, metrics, 20.0, TYPICAL_STEPS_S)
+    assert metrics.timings == [first, second]
+    metrics.timings.clear()  # a copy: callers can't change the record
+    assert len(metrics.timings) == 2
+
+
 def test_no_phrases_means_no_summary(manual):
     assert Metrics(manual.clock).summary() is None
     assert "No phrases" in format_summary(None)

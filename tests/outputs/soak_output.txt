@@ -1,0 +1,148 @@
+
+Replaying 24 min of audio in real time; results at the end.
+Replayed 1 of 24 min, 6 phrases shown
+Replayed 2 of 24 min, 14 phrases shown
+Replayed 3 of 24 min, 22 phrases shown
+Replayed 4 of 24 min, 29 phrases shown
+Replayed 5 of 24 min, 36 phrases shown
+Replayed 6 of 24 min, 42 phrases shown
+Replayed 7 of 24 min, 50 phrases shown
+Replayed 8 of 24 min, 57 phrases shown
+Replayed 9 of 24 min, 63 phrases shown
+Replayed 10 of 24 min, 71 phrases shown
+Replayed 11 of 24 min, 80 phrases shown
+Replayed 12 of 24 min, 88 phrases shown
+Replayed 13 of 24 min, 95 phrases shown
+Replayed 14 of 24 min, 102 phrases shown
+Replayed 15 of 24 min, 111 phrases shown
+Replayed 16 of 24 min, 120 phrases shown
+Replayed 17 of 24 min, 127 phrases shown
+Replayed 18 of 24 min, 136 phrases shown
+Replayed 19 of 24 min, 144 phrases shown
+Replayed 20 of 24 min, 152 phrases shown
+Replayed 21 of 24 min, 159 phrases shown
+Replayed 22 of 24 min, 166 phrases shown
+Replayed 23 of 24 min, 175 phrases shown
+Replayed 24 of 24 min, 183 phrases shown
+
+=== Soak, 24 min ===
+[   1.5-   8.2 s] mic    1 entry: Me: It gave rise to the train, the car, and many other means of transportation.
+[   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand, ice and snow conditions are natural in many countries, and year-round traffic continues largely uninterrupted.
+[  21.1-  29.0 s] system 1 entry: Speaker 2: First, all horsemen wear boots with a heel designed for riding and a flat rather narrow sole.
+[  30.5-  46.4 s] mic    2 entries: Me: He's been looking at coin engravings for many countries, recent examples of work including the prime minister. | Me: The portraits on the new Canadian five- and one-hundred-dollar bills
+[  47.9-  61.5 s] system 2 entries: Speaker 1: Blogs can also be useful in helping students improve their writing. | Speaker 1: A reader's representative changes that mainly.
+[  63.0-  92.1 s] system 4 entries: Speaker 2: Researchers at Princeton University in the United States and Uppsala University in Sweden reported | Speaker 2: That new species evolved in just two generations, although the process is thought to have taken much longer, thanks to Darwin. | Speaker 2: Endemic Serenus, medium-sized terrestrial Serenus and non-flying Serenus cactus. | Speaker 2: The multiplication between serine osseoarthritis.
+[  93.6- 105.8 s] mic    2 entries: Me: For example, the world's most common photographic still image format is 35 millimeters, which is the predominant film size. | Me: Near the end of the analog film era.
+[ 107.3- 117.1 s] system 1 entry: Speaker 3: The capital of Moldova is Chisinau, the local language is Romanian, but Russian is widely spoken.
+[ 118.6- 135.5 s] system 2 entries: Speaker 3: In its early days, the show was only broadcast on a long-running Internet radio station. | Speaker 3: Twenty-Nine Radio, which focused on talk shows.
+[ 137.0- 153.0 s] mic    3 entries: Me: He also engraved banknotes for many countries, the latest examples of his work. | Me: Including portraits of the Prime Minister, new Canadian five and a hundred dollars. | Me: On the front of the bills.
+[ 154.5- 181.6 s] system 4 entries: Speaker 3: Most interpretations of technological determinism share two main conundrums. | Speaker 3: That technological development is itself moving in a direction far beyond cultural or political influence. | Speaker 3: And technology, in turn, has an impact on individual societies rather than... | Speaker 3: It's because of society.
+[ 183.1- 192.8 s] system 1 entry: Speaker 2: Within two weeks, American and French independent troops had liberated southern France and turned toward Germany.
+[ 194.3- 200.7 s] mic    1 entry: Me: His fellow athletes also paid their respects to the moon.
+[ 202.2- 208.9 s] system 1 entry: Speaker 2: If you want to be near the concert, you have to get in early so you can pitch the tent to the music.
+[ 210.4- 215.9 s] system 1 entry: Speaker 1: - Don't deform the site by scratching marks or scratching the structures...
+[ 217.4- 226.6 s] mic    1 entry: Me: Unfortunately, studying traffic flow is difficult because the driver's behavior is impossible to predict 100 percent.
+[ 228.1- 238.9 s] system 2 entries: Speaker 1: The number of paintings was so great that not everyone could afford St. Peter's Square. | Speaker 1: Acquire access to an ongoing dispatch ceremony.
+[ 240.4- 248.4 s] system 1 entry: Speaker 3: Lions are the most numerous group of cats, living in large groups called predators.
+[ 249.9- 262.3 s] mic    2 entries: Me: The International Gymnastics Federation supports joining the letter of the United States Olympic Committee and recognizes that the Olympic family clearly needs to encourage all of our athletes. | Me: A safe environment.
+[ 263.8- 273.9 s] system 1 entry: Speaker 3: Plants get their food through photosynthesis, and they also provide shade.
+[ 275.4- 284.2 s] system 1 entry: Speaker 3: Everything in the universe is made of matter, and all matter is made of tiny particles called atoms.
+[ 285.7- 294.0 s] mic    1 entry: Me: In particular, it has been claimed that you can tell if a person is lying by correctly interpreting microtransactions.
+[ 295.5- 303.8 s] system 1 entry: Speaker 1: This will allow gamers to control actions and movements in video games by moving the device around in a notebook.
+[ 305.3- 310.3 s] system 1 entry: Speaker 1: It's thinner in water and thicker in mountains.
+[ 311.8- 320.7 s] mic    1 entry: Me: On the other hand, ice and snow conditions are natural in many countries and healthy all year round, with traffic continuing in a largely continuous fashion.
+[ 322.2- 328.5 s] system 1 entry: Speaker 3: Do not disturb the site by carving signs or inscriptions on structures.
+[ 330.0- 349.6 s] system 2 entries: Speaker 3: The strategy was effective in cutting off vital military and civilian supplies. | Speaker 3: Although this blockade was in violation of universally accepted international law, enshrined in several international treaties adopted over the past two centuries.
+[ 351.1- 359.3 s] mic    1 entry: Me: One hundred and fifty and two hundred copies were made overnight, now known as Dunlap wide strips.
+[ 360.8- 370.2 s] system 1 entry: Speaker 3: First, all horsemen fight with riding heels and smooth, fairly narrow boots.
+[ 371.7- 382.9 s] system 2 entries: Speaker 3: The hospital followed infection control protocols, including isolating the patient. | Speaker 3: To prevent others from becoming infected.
+[ 384.4- 389.2 s] mic    1 entry: Me: But in this respect, the Schengen area works as one country.
+[ 390.7- 397.9 s] system 1 entry: Speaker 2: The smaller the Rosby number, the less work the star has to do in terms of magnetic inversion.
+[ 399.4- 413.2 s] system 2 entries: Speaker 1: Given all the circumstances, we shouldn't be surprised to learn that our ancestors fed off their white blood cells. | Speaker 1: To some extent, the same way chimpanzees do in the savannah today.
+[ 414.7- 431.3 s] mic    2 entries: Me: This will allow you to have backward compatibility of eighty-two dot eleven a, eighty-two dot eleven b, | Me: And eighty-two points is eleven points, provided the base station has two radios.
+[ 432.8- 446.7 s] system 2 entries: Speaker 1: His work is so highly regarded and meticulously executed that he is considered the originator of it. | Speaker 1: In the family of philatelists, there are people who specialize only in collecting his work.
+[ 448.2- 459.8 s] system 2 entries: Speaker 3: This will allow gamers to control their actions in video games. | Speaker 3: And movements by moving the device through the air.
+[ 461.3- 471.0 s] mic    1 entry: Me: Dr. Daniel Lantaine, a mouse expert on the disease, said the outbreak was likely caused by goalkeepers.
+[ 472.5- 488.0 s] system 2 entries: Speaker 3: It states that the most productive part of the main theme is the intersection of the lines. | Speaker 3: It divides the image into three parts, vertically and horizontally.
+[ 489.5- 499.7 s] system 1 entry: Speaker 2: The roar of a rooster is not like a lion's roar, which is a full-throated roar, but it is more like a phrase of squeaking, screaming words.
+[ 501.2- 509.5 s] mic    1 entry: Me: The four-legged scooter regularly travels to a synthetic capsule in the cabbage patch.
+[ 511.0- 519.6 s] system 1 entry: Speaker 1: If you look online for a hostile environment course, you'll probably find an address for a local company.
+[ 521.1- 529.0 s] system 1 entry: Speaker 3: Most people don't think of them as dinosaurs because they have feathers and they can fly.
+[ 530.5- 539.9 s] mic    1 entry: Me: The Northern Mariana Islands Office of Emergency Management said no remnants had been reported in the country.
+[ 541.4- 554.9 s] system 2 entries: Speaker 1: Generating code is not a teaching method, it's more of a helping hand to individuals. | Speaker 1: People who are going through a new learning experience, like using a new computer program or starting a new project.
+[ 556.4- 566.8 s] system 2 entries: Speaker 1: There's the return shock, there's the culture shock, there's less honeymoon. | Speaker 1: It takes longer and can be more severe.
+[ 568.3- 579.1 s] mic    1 entry: Me: This is the place that the British colonists used to explore, so if you're looking for clues to the colonial past of this place, this is a good place to start.
+[ 580.6- 594.0 s] system 2 entries: Speaker 2: Jinx, from the beautiful sky and the many surrounding mountains, nothing else can be seen. | Speaker 2: Very little of this world can be seen or heard from inside a cave.
+[ 595.5- 606.3 s] system 2 entries: Speaker 2: The service is often used for freight transportation, including yachts, as well as expeditions. | Speaker 2: Data that is received remotely and needs voice.
+[ 607.8- 613.1 s] mic    1 entry: Me: These couples can choose an adoption plan for their child.
+[ 614.6- 625.4 s] system 2 entries: Speaker 2: A well-developed athlete like a crocodile can crawl -- not so well, of course -- swim. | Speaker 2: Run through huge gaps and pull with five times the force of a strong man.
+[ 626.9- 638.6 s] system 2 entries: Speaker 1: For almost a thousand years, the central structure of the church has been in Rome, and it's the center of power and money. | Speaker 1: The concentration led many to question whether this dogma was maintained.
+[ 640.1- 647.8 s] mic    1 entry: Me: In terms of shopping, Casablanca is one of the least interesting places in all of Morocco.
+[ 649.3- 662.5 s] system 2 entries: Speaker 1: Because light pollution wasn't as much of a problem as it is today, they're smartly located in cities or... | Speaker 1: On campus, where it's easier to get to, there are those that were built today.
+[ 664.0- 669.7 s] system 1 entry: Speaker 2: But there's a lot of talk about birds that still look like dinosaurs.
+[ 671.2- 696.3 s] mic    4 entries: Me: We agree with the statement of the United States Olympic Committee. | Me: that the interests of our athletes and our clubs and their sport... | Me: we can better serve within our organization by moving forward with significant change. | Me: Rather than withholding evidence.
+[ 697.8- 711.1 s] system 2 entries: Speaker 3: This is the place that the British colonists used to explore, so if you're looking for evidence of this place's colonial past... | Speaker 3: This is a good area to monitor.
+[ 712.6- 724.5 s] system 2 entries: Speaker 1: A three-alarm car bomb exploded at a police station in the Turkish city of Ghazni, killing two police officers and injuring more than 20 others. | Speaker 1: That's it.
+[ 726.0- 734.5 s] mic    1 entry: Me: They returned to Paris in a chariot, surrounded by a crowd of people shouting and threatening the crown and the king.
+[ 736.0- 743.8 s] system 1 entry: Speaker 3: Plants get their food through photosynthesis, and they also provide shade.
+[ 745.3- 752.3 s] system 1 entry: Speaker 2: Today, the only insects that can't fold their wings are their fins and tails.
+[ 753.8- 768.8 s] mic    2 entries: Me: Nevertheless, among the entire group of TB patients, the rate of withdrawal from multiple drugs is still low. | Me: In South Africa, for a total of three days, 6,000 out of 30,000 people are infected at any given time.
+[ 770.3- 784.3 s] system 2 entries: Speaker 1: Credit cards are unlikely to be accepted in remote islands, but British and Commonwealth currencies may be accepted, please check with the owner in advance. | Speaker 1: To determine what is an acceptable method of washing.
+[ 785.8- 794.8 s] system 1 entry: Speaker 3: People may not expect patience and understanding from travelers returning home.
+[ 796.3- 804.4 s] mic    1 entry: Me: He wasn't in a position to accept the necessary substitutes to overcome, unfortunately forbidden by the gambler.
+[ 805.9- 829.1 s] system 3 entries: Speaker 3: The current senator and first lady of Argentina, Cristina Fernandez de... | Speaker 3: Kirchner announced his presidential candidacy at 3 p.m. | Speaker 3: In La Plata, a city about 30 miles [50 km] from Buenos Aires.
+[ 830.6- 842.6 s] system 2 entries: Speaker 2: At 3 a.m., a car bomb exploded at the Turkish gas station, killing two police officers and injuring more than 20. | Speaker 2: The man.
+[ 844.1- 856.4 s] mic    2 entries: Me: We don't know for sure, but it could have had a branched tongue, a diet that included crayfish, big fish, other molluscs, and it could even have been tame. | Me: It was being human.
+[ 857.9- 865.4 s] system 1 entry: Speaker 2: He did not specify the number of seizures, saying they would be based on China's economic output.
+[ 866.9- 881.0 s] system 2 entries: Speaker 1: Starting in the six digits of the thousand, the Sundarbans were wildlife sanctuaries and digits. | Speaker 1: By approximate estimates, the area is home to four Bengal crowned vultures and about 30,000 stingrays.
+[ 882.5- 890.8 s] mic    1 entry: Me: The lower the Rosby number, the less active the star is in terms of magnetic reversal.
+[ 892.3- 914.6 s] system 4 entries: Speaker 3: - The text gene... | Speaker 3: It's a system that the Federal Aviation Administration says will allow airplanes to fly. | Speaker 3: Shorter routes and save millions of gallons of fuel a year. | Speaker 3: And to reduce our carbon footprint.
+[ 916.1- 933.7 s] system 3 entries: Speaker 3: The Sundarbans are considered to be the world's largest mangrove coastline. | Speaker 3: It stretches six miles -- fifty miles -- along the coast of Bangladesh and India and fifty miles along the coast of Bangladesh and India. | Speaker 3: The inner circles.
+[ 935.2- 943.1 s] mic    1 entry: Me: Duval, who is married and has two grown children, made little impression on a mountain and was absorbed in the story.
+[ 944.6- 957.0 s] system 2 entries: Speaker 1: The center of Tibetan meditation is divine yoga, where the various gods are visualized to clear the energy pathways. | Speaker 1: The chakras are activated and the light-sound consciousness is created.
+[ 958.5- 967.9 s] system 2 entries: Speaker 1: As a result, two fish species were wiped out, and the other two, including the Sabbatarian. | Speaker 1: The shark is on the brink of extinction.
+[ 969.4- 983.6 s] mic    2 entries: Me: Ancient China used a unique way of marking different periods, each period of the Chinese dynasty or dynasty that ruled. | Me: It was considered a separate dynasty.
+[ 985.1-1001.6 s] system 2 entries: Speaker 3: Popular sports include football, basketball, volleyball, and water polo. | Speaker 3: Firefighting, rugby, cycling, ice hockey, ice hockey and fmc racing.
+[1003.1-1012.3 s] system 1 entry: Speaker 3: 20th-century studies have shown that there are two types of genetic variation, latent and expressed.
+[1013.8-1024.6 s] mic    1 entry: Me: Remember, even if the music has ended on the main stages, there may be parts of the festival that will continue to play late into the night.
+[1026.1-1042.5 s] system 3 entries: Speaker 3: To the north and nearby is the romantic and charming town of Sintra. | Speaker 3: And which was made known to foreigners by Lord Byron's writings on the city. | Speaker 3: It's because of the vivid stories.
+[1044.0-1060.3 s] system 3 entries: Speaker 3: Despite the fact that we know of an experimental vaccine that can reduce this. | Speaker 3: The death toll from Ebola, however, has not yet been proven by any specific means that... | Speaker 3: Suitable for treating an existing infection.
+[1061.8-1086.2 s] mic    3 entries: Me: The controversy was sparked by the controversy surrounding Hurricane Katrina relief and reconstruction. | Me: From an expense consultant who handles some financial matters. | Me: The conservatives humorously labeled Bush's New Orleans deal.
+[1087.7-1099.0 s] system 2 entries: Speaker 1: On the other side of the painting, a creature is transformed into an unrecognizable individual who feels... | Speaker 1: You have to change everything you've done as a team and make your own moves.
+[1100.5-1112.3 s] system 2 entries: Speaker 1: The Three Kingdoms were the bloodiest periods in ancient Chinese history. | Speaker 1: Thousands died fighting for the throne of Siam.
+[1113.8-1131.8 s] mic    3 entries: Me: Buses leave from the interchange throughout the day. | Me: Along the river, despite eastbound and Zakkar luxury travelers. | Me: They leave the hexagon behind the sun, the hexagon between the sun.
+[1133.3-1142.3 s] system 1 entry: Speaker 3: The link between brain pathology and behavior supports scientists in their research.
+[1143.8-1154.3 s] system 1 entry: Speaker 2: For some destinations, the larger companies actually have their own planes, but for more destinations and smaller films, this has been a problem.
+[1155.8-1172.3 s] mic    3 entries: Me: Hune has resigned from his post and is being replaced in his office by a deputy parliamentarian. | Me: Member of Parliament Norma Lamb is expected to take over as Secretary of State for Trade and Industry as Davine... | Me: It is liberating.
+[1173.8-1181.2 s] system 1 entry: Speaker 2: The accident occurred in a high mountainous area and is believed to have been the result of enemy fire.
+[1182.7-1198.2 s] system 2 entries: Speaker 1: Nevertheless, the overall TB patient population still has low rates of multi-drug resistance. | Speaker 1: In South Africa, out of a total of 30,000 people infected in three days, 6,000 people at any given time.
+[1199.7-1208.1 s] mic    2 entries: Me: This is a good opportunity to see the Northern Lights when the sky is dark at night. | Me: It's going to be a lot of fun.
+[1209.6-1222.9 s] system 2 entries: Speaker 1: Everett's gymnastics organization supports joining the state Olympic committee's letter and acceptance, which the Olympic family clearly needs to bring. | Speaker 1: A safe environment for all our athletes...
+[1224.4-1234.4 s] system 1 entry: Speaker 2: Rebound shock comes sooner than culture shock, the honeymoon phase is shorter, it lasts longer, and it can be more severe.
+[1235.9-1260.5 s] mic    3 entries: Me: Since the turn of the millennium, the ballot boxes have to be transparent so that voters and observers can vote. | Me: They can prove that there was no envelope at the beginning of the vote and no envelope was added. | Me: Except for the envelopes that were duly counted and allowed to the voters.
+[1262.0-1271.0 s] system 1 entry: Speaker 2: The work done was largely theoretical, but the program was written to promote observations from the Milky Way.
+[1272.5-1282.9 s] system 1 entry: Speaker 2: Cuomo's 53rd term began earlier this year and last month he signed a bill legalizing same-sex marriage.
+[1284.4-1296.0 s] mic    2 entries: Me: Ginny, except for the beautiful sky and the many mountains surrounding it, nothing else can be seen. | Me: There's very little of this world to see or hear from inside a cave.
+[1297.5-1306.1 s] system 1 entry: Speaker 1: They returned to Paris surrounded by chariots of people shouting threats against the crown and the king.
+[1307.6-1318.4 s] system 1 entry: Speaker 3: The capital of Moldova is Chisinau, the local language is Romanian, but Russian is widely spoken.
+[1319.9-1330.5 s] mic    2 entries: Me: Photography has led to important discoveries about micro-expressions, about the interpretation of facial movements. | Me: It's only a few millimeters long.
+[1332.0-1340.9 s] system 1 entry: Speaker 2: The Northern Mariana Islands Office of Emergency Management said no damage was reported in the country.
+[1342.4-1355.9 s] system 2 entries: Speaker 3: Del Potro had a small lead in the second inning, but to decide the winner... | Speaker 3: After the sixth count, we needed another break.
+[1357.4-1366.1 s] mic    2 entries: Me: The Scotch bass four-string trio regularly travels to the syncretic while singing kaboudas. | Me: In the market.
+[1367.6-1377.1 s] system 2 entries: Speaker 1: Ancient cultures and tribes began to preserve them: milk, hair, meat and... | Speaker 1: It's built to be easy to grow.
+[1378.6-1387.2 s] system 1 entry: Speaker 2: You usually hear the voices of tourists and traders all the time, and the story of sound and light is just like a storybook.
+[1388.7-1400.2 s] mic    2 entries: Me: However, after losing the captain's wicket, India scored only 36 runs. | Me: losing seven batters to complete the passes.
+[1401.7-1409.2 s] system 1 entry: Speaker 1: Elements like calcium and potassium are considered metals, and certainly there are metals like silver and gold.
+[1410.7-1436.9 s] system 4 entries: Speaker 3: Twenty-nine-year-old Mr. Malar Bala Subramanian was found in Blue Ash, Ohio. | Speaker 3: A suburb about fifteen miles north of Cincinnati. | Speaker 3: Lying on the ground by the side of the road in his shirt and underwear. | Speaker 3: He was obviously heavily drugged.
+[1438.4-1450.9 s] mic    2 entries: Me: Kochamovelli is the first specialist of the Chilean limestone, known as South America's Yosemite Great Granite Strength. | Me: With a variety of ends.
+[1452.4-1468.4 s] system 2 entries: Speaker 3: While no one knows for sure who carried it, it is known that the formerly large parchment document... | Speaker 3: It's been in stock, sizes are twenty-nine, three drops four, length twenty-four, one drops two, winter width.
+WER 16.5%, CER 6.2% over 110 clips
+Latency over 187 phrases: p50 1.36 s, p95 2.08 s, max 2.48 s; 0 over the 5 s limit.
+  pause detection  p95  1.18 s, budget 0.50 s: over, accepted
+  queue            p95  0.00 s, budget 0.30 s: ok
+  speaker          p95  0.12 s, budget 0.20 s: ok
+  transcription    p95  0.96 s, budget 2.00 s: ok
+  translation      p95  0.56 s, budget 0.50 s: over, accepted
+  printing         p95  0.00 s, budget 0.05 s: ok
+p95 delay: first quarter 2.22 s, last quarter 1.77 s
+Memory after settling: grew 97 MB

@@ -12,16 +12,20 @@ requires-python = ">=3.10"
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "benchmarks"]
+pythonpath = ["src", "benchmarks", "tests/e2e"]
 testpaths = ["tests"]
-# End-to-end replay loads the real models; run it with `pytest -m e2e -s`.
-addopts = "-m 'not e2e'"
-markers = ["e2e: end-to-end replay with the real models (slow, needs the laptop)"]
+# End-to-end replay loads the real models; run it with `pytest -m e2e -s`,
+# and the 20-minute soak with `pytest -m soak -s`.
+addopts = "-m 'not e2e and not soak'"
+markers = [
+    "e2e: end-to-end replay with the real models (slow, needs the laptop)",
+    "soak: 20-minute replay for crashes, memory growth and growing delay",
+]
 
 [tool.ruff]
 line-length = 88
 target-version = "py310"
-src = ["src", "benchmarks"]
+src = ["src", "benchmarks", "tests/e2e"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "B", "UP"]
