@@ -98,8 +98,9 @@ class Summary:
 def normalize(text: str) -> str:
     """Lower-case Armenian text without punctuation, for fair error counts."""
     text = IN_WORD_MARKS.sub("", text.casefold())
-    # "և" is also written as the two letters "եւ"; count both as one spelling.
-    text = text.replace("եւ", "և")
+    # "և" is also written as the two letters "եւ" or "եվ" (Whisper's usual
+    # spelling); count all three as one, so spelling isn't scored as an error.
+    text = text.replace("եւ", "և").replace("եվ", "և")
     return " ".join(NON_WORD.sub(" ", text).split())
 
 
@@ -143,7 +144,7 @@ def parse_fleurs_tsv(text: str) -> dict[str, tuple[str, str]]:
 
 
 def read_wav(data: bytes) -> np.ndarray:
-    """Decode WAV bytes in any sample format to mono float32 at SAMPLE_RATE_HZ."""
+    """Decode WAV (or MP3) bytes to mono float32 at SAMPLE_RATE_HZ."""
     audio, rate_hz = soundfile.read(io.BytesIO(data), dtype="float32", always_2d=True)
     samples = audio.mean(axis=1)
     if rate_hz != SAMPLE_RATE_HZ:
@@ -242,10 +243,17 @@ def format_table(summaries: Sequence[Summary]) -> str:
     return "\n".join(lines)
 
 
-def write_transcripts(model: str, results: Sequence[ClipResult]) -> Path:
+def model_label(model: str, compute_type: str | None) -> str:
+    """Return a short name for results: a local model's folder name, plus the
+    compute type when one was chosen, so runs of one model don't overwrite."""
+    name = Path(model).name if Path(model).is_dir() else model.replace("/", "_")
+    return f"{name}_{compute_type}" if compute_type else name
+
+
+def write_transcripts(label: str, results: Sequence[ClipResult]) -> Path:
     """Save each clip's reference and transcript, for review and the MT benchmark."""
     RESULTS_DIR.mkdir(exist_ok=True)
-    path = RESULTS_DIR / f"asr_{model.replace('/', '_')}.csv"
+    path = RESULTS_DIR / f"asr_{label}.csv"
     with path.open("w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -302,11 +310,12 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(f"{len(clips)} FLEURS hy_am clips, {total_s / 60:.1f} min of audio")
     summaries = []
     for model in args.models:
-        print(f"\n{model}: loading ...", flush=True)
+        label = model_label(model, args.compute_type)
+        print(f"\n{label}: loading ...", flush=True)
         transcribe = load_whisper(model, args.device, args.compute_type, token)
         results = evaluate(transcribe, clips)
-        summaries.append(summarize(model, results))
-        print(f"{model}: transcripts saved to {write_transcripts(model, results)}")
+        summaries.append(summarize(label, results))
+        print(f"{label}: transcripts saved to {write_transcripts(label, results)}")
     print("\n" + format_table(summaries))
 
 

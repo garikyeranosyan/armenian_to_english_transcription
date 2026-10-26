@@ -1,0 +1,12 @@
+﻿200 sentences, ASR input from whisper-turbo-armenian
+
+nllb-200-distilled-600M: loading ...
+nllb-200-distilled-600M: translations saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\mt_nllb-200-distilled-600M.csv
+
+nllb-200-distilled-1.3B: loading ...
+nllb-200-distilled-1.3B: translations saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\mt_nllb-200-distilled-1.3B.csv
+
+| Model | Sentences | chrF++ clean | BLEU clean | chrF++ ASR | BLEU ASR | Mean s | p95 s | Max s | > 0.5 s |
+|---|---|---|---|---|---|---|---|---|---|
+| nllb-200-distilled-600M | 200 | 60.4 | 37.4 | 52.6 | 27.7 | 0.28 | 0.43 | 0.70 | 4 |
+| nllb-200-distilled-1.3B | 200 | 63.2 | 41.3 | 55.0 | 29.8 | 0.57 | 0.87 | 1.41 | 263 |

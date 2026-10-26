@@ -8,7 +8,7 @@ Run from the project folder:
 import argparse
 import shutil
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 # Run as a script, so the program's own package isn't on the path yet.
@@ -28,28 +28,46 @@ def tokenizer_files(model: MtModel) -> list[str]:
     return sorted({prompt_format.source_spm, prompt_format.target_spm})
 
 
-def convert(name: str, models_dir: Path = MT_MODELS_DIR) -> Path:
-    """Convert one candidate, unless it is already there; return its folder."""
-    output_dir = models_dir / name
+def convert_hub_model(
+    hub_id: str,
+    output_dir: Path,
+    copy_files: list[str],
+    add_files: Callable[[Path], None] | None = None,
+) -> Path:
+    """Convert a Hugging Face model to CTranslate2 once; return its folder.
+
+    `add_files` can write extra files the runtime needs into the new folder.
+    """
     if output_dir.is_dir():
-        print(f"{name}: already converted in {output_dir}")
+        print(f"{output_dir.name}: already converted in {output_dir}")
         return output_dir
     from ctranslate2.converters import TransformersConverter
 
-    model = MT_MODELS[name]
     # Convert into a side folder first, so a failed run never looks finished.
-    partial_dir = models_dir / f"{name}.part"
-    models_dir.mkdir(parents=True, exist_ok=True)
-    print(f"{name}: converting {model.hub_id} ...", flush=True)
-    TransformersConverter(
-        model.hub_id,
-        copy_files=tokenizer_files(model),
-        load_as_float16=True,
-        low_cpu_mem_usage=True,
-    ).convert(str(partial_dir), quantization=STORED_TYPE, force=True)
+    partial_dir = output_dir.with_name(f"{output_dir.name}.part")
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    print(f"{output_dir.name}: converting {hub_id} ...", flush=True)
+    try:
+        TransformersConverter(
+            hub_id,
+            copy_files=copy_files,
+            load_as_float16=True,
+            low_cpu_mem_usage=True,
+        ).convert(str(partial_dir), quantization=STORED_TYPE, force=True)
+        if add_files is not None:
+            add_files(partial_dir)
+    except Exception:
+        shutil.rmtree(partial_dir, ignore_errors=True)
+        raise
     partial_dir.rename(output_dir)
-    print(f"{name}: saved to {output_dir}")
+    print(f"{output_dir.name}: saved to {output_dir}")
     return output_dir
+
+
+def convert(name: str, models_dir: Path = MT_MODELS_DIR) -> Path:
+    """Convert one translation candidate, unless it is already there."""
+    model = MT_MODELS[name]
+    return convert_hub_model(model.hub_id, models_dir / name, tokenizer_files(model))
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -78,7 +96,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         except Exception as error:
             # One model failing (e.g. a removed upload) shouldn't stop the others.
             print(f"{name}: conversion failed: {error}")
-            shutil.rmtree(MT_MODELS_DIR / f"{name}.part", ignore_errors=True)
             failed.append(name)
     if failed:
         print(f"Failed: {', '.join(failed)}")

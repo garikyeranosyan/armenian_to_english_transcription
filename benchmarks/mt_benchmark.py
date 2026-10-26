@@ -40,7 +40,7 @@ from live_hy_en.translator import (  # noqa: E402
 )
 
 ENGLISH_DIR = BENCHMARK_DIR / "data" / "fleurs_en_us"
-DEFAULT_ASR_MODEL = "large-v3-turbo"
+DEFAULT_ASR_MODEL = "whisper-turbo-armenian"
 # Translation share of the 5 s latency budget (PLAN.md §2).
 MT_BUDGET_S = 0.5
 # chrF++ (character n-grams plus word bigrams), as reported for FLORES-200.

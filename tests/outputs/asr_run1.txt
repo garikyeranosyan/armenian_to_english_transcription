@@ -1,0 +1,22 @@
+200 FLEURS hy_am clips, 38.5 min of audio
+
+large-v3-turbo: loading ...
+large-v3-turbo: transcripts saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\asr_large-v3-turbo.csv
+
+buzzasr-armenian: loading ...
+.\.venv\Scripts\python.exe : The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+At line:1 char:1
++ .\.venv\Scripts\python.exe benchmarks\asr_benchmark.py --models large ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The current mod...g 'en' instead.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.
+The current model is English-only but the language parameter is set to 'hy'; using 'en' instead.

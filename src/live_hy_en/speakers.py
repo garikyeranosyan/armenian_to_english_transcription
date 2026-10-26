@@ -21,7 +21,8 @@ SPEAKER_MODEL_URL = (
 )
 MIC_LABEL = "Me"
 CALL_LABEL_PREFIX = "Speaker"
-# Provisional until tuned on call-quality voice mixes (TODO.md).
+# Chosen with benchmarks/speaker_benchmark.py on simulated calls: higher values
+# merge fewer voices but add extra speakers.
 SIMILARITY_THRESHOLD = 0.4
 # Feature settings WeSpeaker was trained with: 80 log-mel bands over 25 ms
 # Hamming windows every 10 ms, on samples in the int16 range, without dither.
@@ -122,7 +123,8 @@ class SpeakerTracker:
         """Return "Me" for the microphone, otherwise the matching "Speaker N"."""
         if segment.source is Source.MIC:
             return MIC_LABEL
-        voiceprint = _unit(self._encoder.embed(segment.samples))
+        # The padding around the speech is silence or background, not their voice.
+        voiceprint = _unit(self._encoder.embed(segment.speech_samples))
         speaker = self._closest_speaker(voiceprint)
         if speaker is None:
             speaker = _CallSpeaker(

@@ -99,7 +99,12 @@ class Metrics:
 
     def __init__(self, clock: SessionClock) -> None:
         self._clock = clock
-        self._latencies_s: list[float] = []
+        self._finished: list[PhraseTiming] = []
+
+    @property
+    def timings(self) -> list[PhraseTiming]:
+        """Every shown phrase's timing, in the order they were shown."""
+        return list(self._finished)
 
     def start(self, source: Source, start_s: float, end_s: float) -> PhraseTiming:
         """Begin timing a phrase the moment its end has been detected."""
@@ -115,7 +120,7 @@ class Metrics:
         """Record that the phrase was shown, and log its latency."""
         self.mark(timing, Stage.SHOWN)
         latency_s = timing.latency_s()
-        self._latencies_s.append(latency_s)
+        self._finished.append(timing)
         if latency_s > WARN_LATENCY_S:
             logger.warning(
                 "Slow phrase, limit %g s: %s", MAX_LATENCY_S, format_timing(timing)
@@ -125,14 +130,13 @@ class Metrics:
 
     def summary(self) -> LatencySummary | None:
         """Return the latency over all finished phrases, or None if there were none."""
-        if not self._latencies_s:
+        latencies_s = [timing.latency_s() for timing in self._finished]
+        if not latencies_s:
             return None
         return LatencySummary(
-            phrase_count=len(self._latencies_s),
-            p50_s=statistics.median(self._latencies_s),
-            p95_s=p95(self._latencies_s),
-            max_s=max(self._latencies_s),
-            over_limit_count=sum(
-                latency_s > MAX_LATENCY_S for latency_s in self._latencies_s
-            ),
+            phrase_count=len(latencies_s),
+            p50_s=statistics.median(latencies_s),
+            p95_s=p95(latencies_s),
+            max_s=max(latencies_s),
+            over_limit_count=sum(latency > MAX_LATENCY_S for latency in latencies_s),
         )

@@ -12,9 +12,12 @@ import numpy as np
 
 from live_hy_en.capture import SAMPLE_RATE_HZ
 
-# Chosen by the M1 benchmark (benchmarks/asr_benchmark.py). Any faster-whisper
-# model name, Hugging Face model ID or local CTranslate2 folder works here.
-ASR_MODEL = "large-v3-turbo"
+# Fine-tuned models converted by benchmarks/convert_asr.py, one folder each.
+ASR_MODELS_DIR = Path(__file__).resolve().parents[2] / "models" / "asr"
+# Chosen by benchmarks/asr_benchmark.py: lowest WER on FLEURS hy_am. Any
+# faster-whisper model name, Hugging Face model ID or local CTranslate2 folder
+# works here.
+ASR_MODEL = str(ASR_MODELS_DIR / "whisper-turbo-armenian")
 LANGUAGE = "hy"
 BEAM_SIZE = 5
 GPU_COMPUTE_TYPE = "float16"

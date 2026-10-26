@@ -29,14 +29,24 @@ class FakeEncoder:
         self.voiceprints: dict[float, np.ndarray] = {}
         self.calls = 0
 
-    def segment(self, voiceprint: np.ndarray, source=Source.SYSTEM) -> SpeechSegment:
+    def segment(
+        self,
+        voiceprint: np.ndarray,
+        source=Source.SYSTEM,
+        speech_s: float = 1.0,
+        lead_in_s: float = 0.0,
+    ) -> SpeechSegment:
         key = float(len(self.voiceprints) + 1)
         self.voiceprints[key] = voiceprint
-        samples = np.full(SAMPLE_RATE_HZ, key, dtype=np.float32)
-        return SpeechSegment(source, 0.0, 1.0, samples)
+        speech = np.full(round(speech_s * SAMPLE_RATE_HZ), key, dtype=np.float32)
+        lead_in = np.zeros(round(lead_in_s * SAMPLE_RATE_HZ), dtype=np.float32)
+        return SpeechSegment(
+            source, 0.0, speech_s, np.concatenate([lead_in, speech]), lead_in.size
+        )
 
     def embed(self, samples: np.ndarray) -> np.ndarray:
         self.calls += 1
+        self.embedded = samples
         return self.voiceprints.get(float(samples[0]), VOICE_A)
 
 
@@ -112,6 +122,14 @@ def test_closest_speaker_wins_when_several_are_similar(encoder):
     # B is only created because a threshold of 0.1 still rejects A and C for it.
     labels = _labels(tracker, segments)
     assert labels[-1] == labels[2]
+
+
+def test_voiceprint_is_made_from_the_speech_without_padding(encoder):
+    tracker = SpeakerTracker(encoder)
+    segment = encoder.segment(VOICE_A, speech_s=2.0, lead_in_s=0.3)
+    tracker.assign_speaker(segment)
+    assert encoder.embedded.size == 2 * SAMPLE_RATE_HZ
+    assert encoder.embedded.all()
 
 
 def test_warm_up_runs_the_model_once_on_a_second_of_silence(encoder):
