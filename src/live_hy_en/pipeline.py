@@ -14,7 +14,13 @@ from live_hy_en.capture import AudioCapture, AudioFrame, SessionClock, Source
 from live_hy_en.config import Settings
 from live_hy_en.metrics import Metrics, PhraseTiming, Stage, format_summary
 from live_hy_en.output import TranscriptEntry, print_entry, print_message
-from live_hy_en.segmenter import Segmenter, SileroVad, SpeechDetector, SpeechSegment
+from live_hy_en.segmenter import (
+    END_SILENCE_MS,
+    Segmenter,
+    SileroVad,
+    SpeechDetector,
+    SpeechSegment,
+)
 from live_hy_en.speakers import SpeakerTracker, WeSpeakerEncoder
 from live_hy_en.transcriber import FasterWhisperRecognizer, Transcriber
 from live_hy_en.translator import CTranslate2Translator, Translator
@@ -24,6 +30,9 @@ from live_hy_en.translator import CTranslate2Translator, Translator
 MAX_QUEUED_SEGMENTS = 8
 # Transcripts waiting for translation.
 MAX_QUEUED_TRANSCRIPTS = 8
+# Loopback sends nothing while the call is silent; after this long without a
+# frame, a phrase still open has ended, as after a pause in the audio.
+SILENT_SOURCE_S = END_SILENCE_MS / 1000
 # How often the main thread wakes while it waits for Ctrl+C.
 WAIT_FOR_CTRL_C_S = 0.2
 
@@ -129,7 +138,17 @@ class Pipeline:
     def _segment_frames(
         self, frames: queue.SimpleQueue[AudioFrame | None], segmenter: Segmenter
     ) -> None:
-        while (frame := frames.get()) is not None:
+        while True:
+            try:
+                frame = frames.get(timeout=SILENT_SOURCE_S)
+            except queue.Empty:
+                # Without this, the last phrase before the call goes quiet would
+                # wait until someone on the call speaks again.
+                for segment in segmenter.flush():
+                    self._queue_segment(segment)
+                continue
+            if frame is None:
+                break
             for segment in segmenter.process(frame):
                 self._queue_segment(segment)
         for segment in segmenter.flush():

@@ -164,6 +164,16 @@ def test_entries_are_shown_while_the_session_runs(shown):
     pipeline.stop()
 
 
+def test_phrase_ends_when_a_source_falls_silent(shown):
+    # Loopback stops sending when the call goes quiet, with no pause frames.
+    pipeline = Pipeline(_models(), SessionClock(), STARTED_AT, show=shown)
+    pipeline.start()
+    _feed(pipeline, _phrase(Source.SYSTEM, 1.0, 0.2)[:10])  # speech only
+    assert shown.wait_for(1)
+    pipeline.stop()
+    assert len(shown.entries) == 1
+
+
 def test_a_phrase_still_open_at_shutdown_is_shown(shown):
     frames = _phrase(Source.MIC, 1.0, 0.2)[:10]  # speech only, no pause after
     [entry] = _run(_models(), shown, frames)

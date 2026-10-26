@@ -149,7 +149,6 @@ class Segmenter:
             if frame.start_s - expected_start_s > MAX_FRAME_GAP_S:
                 # No audio arrived for a while, so whatever was said has ended.
                 segments += self.flush()
-                self._detector.reset()
         if self._next_window_s is None:
             self._next_window_s = frame.start_s
         self._pending = np.concatenate([self._pending, frame.samples])
@@ -168,6 +167,7 @@ class Segmenter:
         self._next_window_s = None
         # Audio from before a gap doesn't lead into what comes after it.
         self._recent_windows.clear()
+        self._detector.reset()
         return segments
 
     def _process_window(
