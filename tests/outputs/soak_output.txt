@@ -136,11 +136,11 @@ Replayed 24 of 24 min, 183 phrases shown
 [1410.7-1436.9 s] system 4 entries: Speaker 3: 29-year-old Mr. Malar Balasubramanian was found in Oahu's Blue Ash | Speaker 3: A statue about 15 miles north of Cincinnati | Speaker 3: Lying on the ground by the side of the road in her shirt and underwear | Speaker 3: Obviously under the influence of drugs.
 [1438.4-1450.9 s] mic    2 entries: Me: The name Mowgli is the first purpose of the Chilean foundation known as the South American Yosemite Great Granite Force. | Me: What is the difference between the two?
 [1452.4-1468.4 s] system 2 entries: Speaker 3: While no one knows for sure who wrote it is known to have used a large parchment document | Speaker 3: were in reserve sizes are 29.3% four length 24.1% two inches wide
-WER 12.5%, CER 3.7% over 110 clips
-Latency over 187 phrases: p50 1.26 s, p95 2.09 s, max 8.55 s; 1 over the 5 s limit.
+WER 12.6%, CER 3.7% over 110 clips
+Latency over 187 phrases: p50 1.27 s, p95 2.09 s, max 7.00 s; 1 over the 5 s limit.
   pause detection  p95  1.19 s, budget 0.50 s: over, accepted
   queue            p95  0.00 s, budget 0.30 s: ok
   speaker          p95  0.09 s, budget 0.20 s: ok
-  transcription    p95  0.87 s, budget 2.00 s: ok
-  translation      p95  0.65 s, budget 0.50 s: over, accepted
+  transcription    p95  0.85 s, budget 2.00 s: ok
+  translation      p95  0.64 s, budget 0.50 s: over, accepted
   printing         p95  0.00 s, budget 0.05 s: ok

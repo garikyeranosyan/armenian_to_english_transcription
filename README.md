@@ -430,13 +430,14 @@ which `benchmarks\asr_benchmark.py` downloads into `benchmarks\data\`. They are
 skipped automatically where those are missing.
 
 Results below were measured on 27 Oct with BuzzASR in 8-bit with greedy
-decoding, but still with faster-whisper's default five retries. That soak failed
-on one phrase (8.55 s); the two-retry limit (5.1) was added afterwards and the
-soak still has to be re-run with it.
+decoding. The replays ran with faster-whisper's default five retries, the soak
+with the two-retry limit (5.1). The soak still fails on one phrase in 187
+(7.00 s; 8.55 s with five retries), most likely a decode stuck in a loop up to
+faster-whisper's 448-token limit; see section 7.
 
 | Requirement | Test | Latest result (27 Oct 2026) |
 |---|---|---|
-| Latency ≤ 5 s, p95 ≈ 3.5 s | every replay, measured by Metrics | replays: max 2.94 s, p95 1.64–2.19 s; soak: p95 2.09 s, but one phrase 8.55 s (see above) |
+| Latency ≤ 5 s, p95 ≈ 3.5 s | every replay, measured by Metrics | replays: max 2.94 s, p95 1.64–2.19 s; soak: p95 2.09 s, but one phrase 7.00 s (see above) |
 | Step budgets (PLAN.md §2) | every replay prints each step's p95 against its budget | all within budget except the accepted overruns below |
 | Printed live, nothing lost | alternating call, both sides at once, long monologue | all phrases shown during playback |
 | `Me` vs `Speaker N` | replay + unit tests | correct for every phrase |
@@ -458,6 +459,11 @@ soak still has to be re-run with it.
 
 ## 7. Known limitations
 
+- **One phrase in about 200 can still miss the 5 s limit.** When greedy decoding
+  gets stuck in a loop, faster-whisper keeps generating up to 448 tokens and then
+  retries, although a 10 s Armenian phrase needs only about 40 of BuzzASR's
+  tokens. In the soak this took one phrase in 187 to 7.00 s. Capping the tokens
+  per decode (about 128) is the planned fix; it is not yet measured.
 - **Accuracy on real conversation is unmeasured and likely lower.** All ASR and MT
   numbers come from FLEURS, which is read Wikipedia-style sentences, and BuzzASR
   was trained on FLEURS-style audio. On the ArmBench-ASR leaderboard, the previous
