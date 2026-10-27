@@ -188,15 +188,15 @@ its own format and converted to 16 kHz mono.
                                                              │
                                   ┌──────────────────────────▼─────────────────┐
                                   │ Transcription thread                       │
-                                  │   ASR: Armenian speech → Armenian text      │
-                                  │   Speaker ID: mic → "Me",                   │
-                                  │               system → "Speaker N"          │
+                                  │   ASR: Armenian speech → Armenian text     │
+                                  │   Speaker ID: mic → "Me",                  │
+                                  │               system → "Speaker N"         │
                                   └──────────────────────────┬─────────────────┘
                                         bounded queue (8 transcripts)
                                   ┌──────────────────────────▼─────────────────┐
                                   │ Translation thread                         │
-                                  │   MT: Armenian → English                    │
-                                  │   Print the entry                           │
+                                  │   MT: Armenian → English                   │
+                                  │   Print the entry                          │
                                   └────────────────────────────────────────────┘
                            Metrics timestamps every phrase at every step
 ```
