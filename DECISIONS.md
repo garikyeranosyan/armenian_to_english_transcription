@@ -84,6 +84,24 @@ Each entry uses this format:
 - **Reason:** scoring a 32 ms window is cheap, and the GPU is kept free for transcription and translation, which need it most.
 - **Alternatives considered:** running the VAD on the GPU (competes with the heavier models for no real gain).
 
+### 4. Audio around each phrase is kept: about 300 ms before, up to 200 ms after (2026-10-25)
+
+- **Decision:** a segment's audio starts up to 300 ms before speech was detected and ends up to 200 ms after it; `start_s` and `end_s` still mark the speech itself, and `speech_samples` gives the speech without the padding.
+- **Reason:** live, the first word was cut off in most phrases: Silero scores a soft first sound as speech only after it has begun, and Whisper drops words cut right at a segment's edge. The tail comes from silence the segmenter already waits for, so it adds no latency, and latency is still measured from the real end of speech.
+- **Alternatives considered:** one 32 ms window before the speech (the previous rule, which clipped first words); a 500 ms lead-in (catches even slower starts, but adds more noise and silence to each phrase).
+
+### 5. A phrase ends after 700 ms of silence (2026-10-25)
+
+- **Decision:** `END_SILENCE_MS` is 700 ms instead of 500 ms.
+- **Reason:** 500 ms split sentences at natural pauses in conversation, giving the transcriber and translator half sentences. It costs about 0.2 s per phrase: pause detection has a p95 of 0.7–1.2 s, over the ~0.5 s step budget in `PLAN.md`, which is accepted because whole phrases still finish within 2.5 s.
+- **Alternatives considered:** 500 ms (the original, faster but more mid-sentence splits); 800 ms or more (fewer splits, slower).
+
+### 6. Long phrases end at a 100 ms pause once they pass 5 s (2026-10-25)
+
+- **Decision:** after 5 s of speech, a gap of 100 ms between words ends the phrase; the 10 s cap stays as the hard limit.
+- **Reason:** the 10 s cap cut words in half. Measured with Silero on 200 FLEURS clips, cuts inside speech fell from 82 of 92 (89 %) to 16 of 125 (13 %), and forced cuts at 10 s from 87 to 18. The cost is more cuts (92 to 125), so translation gets more partial sentences.
+- **Alternatives considered:** 250 ms after 6 s (still 66 % of cuts inside speech, since readers rarely pause that long); 100 ms after 6 s (105 cuts, 24 inside speech); cutting at the quietest point before the cap (not tried); a 15 s cap (fewer cuts, but slower transcription and still mid-word).
+
 ## transcriber.py
 
 ### 1. Transcription model is large-v3-turbo (2026-10-24)
@@ -115,6 +133,12 @@ Each entry uses this format:
 - **Decision:** use CUDA with float16 when a GPU is found; otherwise use the CPU with int8 and log a warning.
 - **Reason:** `PLAN.md` requires the GPU first with a CPU fallback; float16 is fastest on the GPU and int8 is fastest on the CPU.
 - **Alternatives considered:** requiring a GPU (fails on machines without one); one compute type for both devices (float16 is slow or unsupported on CPU).
+
+### 6. Transcription model is the Armenian fine-tune whisper-large-v3-turbo-armenian (2026-10-24)
+
+- **Decision:** `ASR_MODEL` is `Chillarmo/whisper-large-v3-turbo-armenian`, converted once to CTranslate2 by `benchmarks/convert_asr.py`; this replaces entry 1.
+- **Reason:** on the same 200 FLEURS clips it has 19.5 % WER and 10.3 % CER against 45.9 % and 13.6 % for large-v3-turbo, for about 0.02 s more per clip (p95 0.87 s, max 1.01 s, inside the 2 s budget). Against Metric-AI's corrected FLEURS references its WER is 17.8 %, and through the full pipeline in the end-to-end replay 12–17 %.
+- **Alternatives considered:** large-v3-turbo (2.4 times the word errors); `BuzzASR/armenian` (its non-standard tokenizer converts without language tokens, so faster-whisper runs it as English-only; `convert_asr.py` now rejects such models); large-v3 (too slow); Meta MMS, SeamlessM4T v2 and NVIDIA's Armenian FastConformer (not benchmarked; FastConformer is the best open model on ArmBench-ASR).
 
 ## translator.py
 
@@ -186,6 +210,12 @@ Each entry uses this format:
 - **Reason:** the right value depends on call-app compression and the actual voices (`PLAN.md` risk 4), which only a real call recording shows.
 - **Alternatives considered:** tuning now on public datasets (clean studio audio, not call quality).
 
+### 6. Voiceprints are made from the speech alone; the threshold stays 0.40 (2026-10-25)
+
+- **Decision:** the voiceprint is computed from a segment's speech without its padding (entry 4 of `segmenter.py`), and `SIMILARITY_THRESHOLD` stays 0.40, now chosen by `benchmarks/speaker_benchmark.py`. This settles entry 5, and entry 3 stays as it is.
+- **Reason:** the benchmark simulates 60 calls of 2 to 4 remote speakers from 40 Common Voice 27.0 Armenian speakers, sent through the Opus codec at about 28 kbit/s, with 20 % short replies. At 0.40, speech-only voiceprints cut phrases filed under the wrong person from 3.8 % to 2.5 % with splits about the same (5.9 % to 5.6 %). 0.40 was kept over 0.45 so that fewer extra speakers appear.
+- **Alternatives considered:** 0.45 (0.8 % merged, but 8.8 % split, about one extra label per call); short phrases taking the nearest label without creating or changing a speaker (mislabelled 26 to 38 of 187 short replies, turning splits into merges); updating a voiceprint only on clear matches (the same trade-off as raising the threshold, with an extra rule); subtracting the call's average voiceprint (splits rose to 18 to 41 %).
+
 ## output.py
 
 ### 1. Entries show the wall-clock time the phrase started (2026-10-24)
@@ -225,3 +255,23 @@ Each entry uses this format:
 - **Decision:** `pyproject.toml` declares the `live-hy-en` package from `src/`, and `requirements.txt` installs it in editable mode (`-e .`), so `python -m live_hy_en` works from any folder.
 - **Reason:** `PLAN.md` asks for one command to start; the editable install also needs no reinstall after code changes.
 - **Alternatives considered:** setting `PYTHONPATH=src` before each run (an extra step); adding `src` to `sys.path` inside the program (a path hack in the code).
+
+### 5. A phrase is closed when its source sends nothing for 0.7 s (2026-10-26)
+
+- **Decision:** each segmenter thread waits for frames with a 0.7 s timeout (the end-of-phrase pause) and, when none arrive, closes the open phrase.
+- **Reason:** WASAPI loopback sends nothing while the call is silent, so the segmenter used to notice the end of the last phrase only when the next frame came, when someone on the call spoke again: one phrase took 16 s in the replay.
+- **Alternatives considered:** waiting for the next frame (the bug); a 0.1 s timeout like the segmenter's frame-gap rule (faster, but a delayed audio callback could cut a phrase short).
+
+## tests
+
+### 1. End-to-end tests share one set of models, loaded with the network blocked (2026-10-26)
+
+- **Decision:** a session fixture loads every model once with all network connections blocked; every end-to-end test, the soak and the offline test use that set.
+- **Reason:** two sets of models don't fit in the laptop's GPU memory and slow every model 3 to 10 times, which made the replays fail on latency; loading with the network blocked also proves the `PLAN.md` requirement of local models only.
+- **Alternatives considered:** each test file loading its own models; checking local-only behaviour by hand with the network switched off.
+
+### 2. Step budgets are checked, with listed overruns accepted (2026-10-26)
+
+- **Decision:** every replay checks the 5 s limit, the 3.5 s p95 target and each step's p95 against the `PLAN.md` §2 budget; pause detection and translation are allowed over budget, and the queue too when both sides talk at once.
+- **Reason:** the 5 s limit is the hard rule and holds with a wide margin (max 2.48 s over 24 minutes); the overruns come from deliberate choices (`segmenter.py` 5, `translator.py` 6, `pipeline.py` 1) and are printed, not hidden.
+- **Alternatives considered:** failing on any step over budget (would reject those choices); checking only the total (hides which step is slow).
