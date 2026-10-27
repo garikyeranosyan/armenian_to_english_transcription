@@ -89,18 +89,19 @@ Invoke-WebRequest https://github.com/k2-fsa/sherpa-onnx/releases/download/speake
 (Get-FileHash models\wespeaker_resnet34_LM.onnx).Hash
 # must print E9848563DA86F263117134DFD7AD63C92355B37DE492B55E325400C9D9C39012
 
-# Transcription: Armenian Whisper fine-tune, converted to CTranslate2 (1.6 GB)
-.\.venv\Scripts\python.exe benchmarks\convert_asr.py
+# Transcription: BuzzASR's Armenian Whisper, converted to CTranslate2 (3.1 GB)
+.\.venv\Scripts\python.exe benchmarks\convert_asr.py buzzasr-armenian
 
 # Translation: NLLB-200 distilled 1.3B, converted to CTranslate2 (2.6 GB)
 .\.venv\Scripts\python.exe benchmarks\convert_mt.py nllb-200-distilled-1.3B
 ```
 
 The converters download each model from its publisher's own Hugging Face page and
-write it into its own folder (`models\asr\whisper-turbo-armenian`,
+write it into its own folder (`models\asr\buzzasr-armenian`,
 `models\mt\nllb-200-distilled-1.3B`). A failed conversion never leaves a
-half-written folder behind. `convert_mt.py` without arguments converts all five
-translation candidates, which is only needed for the benchmarks.
+half-written folder behind. Without arguments, `convert_asr.py` converts both
+transcription candidates and `convert_mt.py` all five translation candidates,
+which is only needed for the benchmarks.
 
 If a model is missing, the program stops at startup with an error naming it.
 For the VAD, speaker and translation models, the error also says how to get the
@@ -278,10 +279,11 @@ candidate whose speed fits its share of the latency budget (PLAN.md §2:
 transcription ≤ 2.0 s, translation ≤ 0.5 s, speaker ID ≤ 0.2 s per phrase, 5 s
 hard limit end to end). The full reasoning is in `DECISIONS.md`.
 
-### 5.1 Transcription: `Chillarmo/whisper-large-v3-turbo-armenian`
+### 5.1 Transcription: `BuzzASR/armenian`
 
-An Armenian fine-tune of Whisper large-v3-turbo, run with faster-whisper
-(CTranslate2, float16 on the GPU, beam size 5).
+BuzzASR's Armenian model: Whisper large-v3 fine-tuned with its own Armenian
+tokenizer (MIT licence, Findings of EMNLP 2026), run with faster-whisper
+(CTranslate2, 8-bit weights on the GPU, greedy decoding, at most two retries).
 
 Benchmark: `benchmarks/asr_benchmark.py` on 200 clips (38.5 min) of the FLEURS
 `hy_am` test set, timed through the program's own recognizer on the laptop's GPU.
@@ -289,49 +291,71 @@ WER is word error rate, CER is character error rate; lower is better.
 
 | Model | WER | CER | Mean time per clip | Max time | Result |
 |---|---|---|---|---|---|
-| **whisper-turbo-armenian (fine-tune)** | **19.5 %** | **10.3 %** | 0.66 s | 1.01 s | **chosen** |
+| **BuzzASR/armenian, 8-bit, greedy** | **11.4 %** | **3.4 %** | 0.81 s | 7.84 s | **chosen** |
+| BuzzASR/armenian, float16, beam 5 | 10.3 % | 3.1 % | 0.80 s | 6.58 s | most accurate, but too slow beside NLLB (below) |
+| whisper-turbo-armenian (fine-tune) | 19.5 % | 10.3 % | 0.65 s | 0.96 s | 1.9× the word errors |
 | Whisper large-v3-turbo | 45.9 % | 13.6 % | 0.64 s | 0.95 s | 2.4× the word errors |
 | Whisper large-v3 | 42.6 % | – | 3.11 s | – | 175 of 200 clips over the 2 s budget |
 | Whisper medium | 56.1 % | – | – | – | 123 clips over budget |
 | Whisper small | 81.3 % | – | – | – | too inaccurate |
-| BuzzASR/armenian (fine-tune) | – | – | – | – | rejected, see below |
 
 (The large-v3, medium and small figures come from the first benchmark run on
 24 Oct; dashes mark values that run didn't keep.)
 
-- Scored against Metric-AI's manually corrected FLEURS transcripts (used by the
-  ArmBench-ASR leaderboard), the fine-tune reaches 17.8 % WER and 9.5 % CER.
-  Some of the 19.5 % is errors in FLEURS's own transcripts.
-- Through the full pipeline in the end-to-end replay, the WER is 12–17 %.
-- **BuzzASR** was rejected because its tokenizer has a non-standard token order.
-  After conversion it has no language tokens, so faster-whisper treats it as
-  English-only and transcribes Armenian as English. `convert_asr.py` now refuses
-  any model without an Armenian language token.
+- **Why 8-bit and greedy:** in float16 with beam search, BuzzASR (2.9 GB) and
+  NLLB-1.3B (2.6 GB) together overflowed the laptop's GPU memory, which slowed
+  every model: in the 24-minute soak, 4 phrases went over 5 s (max 9.97 s) and
+  translation p95 rose from 0.56 s to 1.82 s. 8-bit weights halve the memory and
+  greedy decoding, which is how BuzzASR reports its own scores, shortens each
+  decode. Together they cost 1.1 points of WER.
+- **Speed on live-length phrases:** on the 90 clips up to 10 s (the segmenter's
+  cap), BuzzASR takes at most 0.88 s, inside the 2 s budget.
+- **Retries:** when a result repeats itself or the model is unsure,
+  faster-whisper decodes again at a higher temperature. Its default of up to five
+  retries took one phrase to 8.55 s in the soak, and one 22 s benchmark clip to
+  7.84 s. The program allows at most two (temperatures 0, 0.2 and 0.4), which
+  keeps most of the rescue at a bounded cost.
+- **Training data:** BuzzASR was trained on FLEURS and Common Voice. Its test
+  split was not used for training, but the recordings and style are the same,
+  so its lead on conversational audio may be smaller than on FLEURS.
+- **Conversion:** its Armenian tokenizer lists Whisper's special tokens twice,
+  and the copies that `transformers` uses have different IDs from the ones the
+  model was trained with. It also lacks the empty token by which CTranslate2
+  recognises a multilingual model. Converted as is, faster-whisper ran it as
+  English-only. `convert_asr.py` now gives each special token its trained ID
+  (from the model's `added_tokens.json`), adds the empty token in a freed slot,
+  and refuses any conversion whose token layout faster-whisper would misread.
+- The previous choice, Chillarmo's turbo fine-tune, scores 17.8 % WER and 9.5 %
+  CER against Metric-AI's manually corrected FLEURS transcripts (used by the
+  ArmBench-ASR leaderboard), and 12–17 % WER in the end-to-end replay.
 - **Not benchmarked here:** Meta MMS, SeamlessM4T v2 and NVIDIA's Armenian
   FastConformer (see section 8).
 
 ### 5.2 Translation: `facebook/nllb-200-distilled-1.3B`
 
-Run with CTranslate2 (float16 on the GPU, beam size 4) and sentencepiece.
+Run with CTranslate2 (8-bit weights on the GPU, beam size 4) and sentencepiece.
 
 Benchmark: `benchmarks/mt_benchmark.py` translates the same 200 FLEURS sentences
-twice: from the correct Armenian text, and from the chosen ASR model's
-transcripts, which is what the program really translates. Both are scored against
+twice: from the correct Armenian text, and from an ASR model's transcripts,
+which is what the program really translates (still the previous model's,
+Chillarmo's turbo fine-tune, so the ASR-text column is pessimistic). Both are scored against
 FLEURS's English references with chrF++ and BLEU (higher is better).
 
 | Model | chrF++ correct text | chrF++ ASR text | BLEU ASR text | Mean time | p95 time | Result |
 |---|---|---|---|---|---|---|
-| **NLLB-200 distilled 1.3B** | **63.2** | **55.0** | **29.8** | 0.57 s | 0.87 s | **chosen** |
+| **NLLB-200 distilled 1.3B, 8-bit** | **63.0** | **55.2** | **30.5** | 0.61 s | 0.90 s | **chosen** |
+| NLLB-200 distilled 1.3B, float16 | 63.2 | 55.0 | 29.8 | 0.57 s | 0.87 s | same accuracy, twice the GPU memory |
 | NLLB-200 distilled 600M | 60.4 | 52.6 | 27.7 | 0.28 s | 0.43 s | fits 0.5 s, less accurate |
 | M2M100 1.2B | 49.1 | 42.4 | 18.3 | – | – | much less accurate |
 | OPUS-MT hy→en | 37.5 | 33.2 | 10.7 | 0.15 s | 0.24 s | least accurate; 11 of 200 translations over 0.5 s |
 | MADLAD-400 3B | – | – | – | – | – | wouldn't load in the laptop's GPU memory |
 
-NLLB-1.3B takes longer than its 0.5 s share on whole FLEURS sentences: 263 of 400
-translations went over. This was accepted because accuracy matters more here and
-the end-to-end latency stays far inside 5 s. Live phrases are shorter than whole
-FLEURS sentences, and translation overlaps the next transcription. In the
-24-minute soak run, translation p95 was 0.56 s and total latency max 2.48 s.
+NLLB-1.3B takes longer than its 0.5 s share on whole FLEURS sentences: 279 of 400
+translations went over in 8-bit (263 in float16). This was accepted because
+accuracy matters more here and live phrases are shorter than whole FLEURS
+sentences: in the 24-minute soak, translation p95 was 0.65 s. 8-bit was chosen
+for memory, not speed: alone on the GPU it is no faster, but it leaves room for
+the speech model.
 
 ### 5.3 Speaker identification: WeSpeaker ResNet34 + online clustering
 
@@ -387,7 +411,7 @@ from 89 % to 13 %.
 Tests are derived from the requirements in PLAN.md §5, not from the code.
 
 ```powershell
-# Unit tests: fast, models replaced by fakes (197 tests)
+# Unit tests: fast, models replaced by fakes (201 tests)
 .\.venv\Scripts\python.exe -m pytest
 
 # End-to-end: real models, FLEURS audio replayed through the pipeline in real time (~5 min)
@@ -405,15 +429,21 @@ The end-to-end and soak tests need the models from 1.3 and the FLEURS data,
 which `benchmarks\asr_benchmark.py` downloads into `benchmarks\data\`. They are
 skipped automatically where those are missing.
 
-| Requirement | Test | Latest result (26 Oct 2026) |
+Results below were measured on 27 Oct with BuzzASR in 8-bit with greedy
+decoding, but still with faster-whisper's default five retries. That soak failed
+on one phrase (8.55 s); the two-retry limit (5.1) was added afterwards and the
+soak still has to be re-run with it.
+
+| Requirement | Test | Latest result (27 Oct 2026) |
 |---|---|---|
-| Latency ≤ 5 s, p95 ≈ 3.5 s | every replay, measured by Metrics | max 1.95 s (replays), 2.48 s (soak); p95 1.72–2.08 s |
+| Latency ≤ 5 s, p95 ≈ 3.5 s | every replay, measured by Metrics | replays: max 2.94 s, p95 1.64–2.19 s; soak: p95 2.09 s, but one phrase 8.55 s (see above) |
 | Step budgets (PLAN.md §2) | every replay prints each step's p95 against its budget | all within budget except the accepted overruns below |
 | Printed live, nothing lost | alternating call, both sides at once, long monologue | all phrases shown during playback |
 | `Me` vs `Speaker N` | replay + unit tests | correct for every phrase |
-| Both sides talking at once | replay | max 1.95 s |
-| Long monologue (47 s nonstop) | replay | split into 6 phrases, max 1.72 s |
-| Reliable for 20+ min | soak | 187 phrases, none lost; delay not growing (p95 2.22 s → 1.77 s); memory +97 MB after settling |
+| Accuracy through the pipeline | every replay | 12.5–12.8 % WER (13.7 % with the previous model) |
+| Both sides talking at once | replay | max 2.19 s |
+| Long monologue (47 s nonstop) | replay | split into 6 phrases, max 1.68 s |
+| Reliable for 20+ min | soak | 187 phrases, none lost; delay growth and memory not checked, as the run stopped at the latency check (26 Oct, previous model: delay not growing, memory +97 MB) |
 | Local models only | models load and run with all network connections blocked | no connection attempts |
 | No weights, audio or secrets committed | `test_repository.py` | passes |
 
@@ -429,9 +459,10 @@ skipped automatically where those are missing.
 ## 7. Known limitations
 
 - **Accuracy on real conversation is unmeasured and likely lower.** All ASR and MT
-  numbers come from FLEURS, which is read Wikipedia-style sentences. On the
-  ArmBench-ASR leaderboard, the chosen ASR model scores about 25 % WER on FLEURS
-  but about 82 % on film dialogue. Fast, casual or accented speech, Western
+  numbers come from FLEURS, which is read Wikipedia-style sentences, and BuzzASR
+  was trained on FLEURS-style audio. On the ArmBench-ASR leaderboard, the previous
+  ASR model (Chillarmo's turbo fine-tune) scores about 25 % WER on FLEURS but
+  about 82 % on film dialogue; BuzzASR isn't on that leaderboard. Fast, casual or accented speech, Western
   Armenian and noisy calls will produce more errors.
 - **No rehearsal with a real call yet.** Speaker labels and latency were measured
   on simulated and replayed audio, not on a call with real remote participants.
@@ -462,15 +493,14 @@ skipped automatically where those are missing.
 - Build a test set of real conversational and call audio, recorded and
   transcribed locally, and benchmark on it instead of read speech.
 - Benchmark NVIDIA's `stt_hy_fastconformer_hybrid_large_pc`: the best open model
-  on ArmBench-ASR, at 19.9 % average WER against 33.0 % for the current model, and
-  much better on film dialogue. Also benchmark SeamlessM4T v2, which also
+  on ArmBench-ASR, at 19.9 % average WER against 33.0 % for the previous model
+  (BuzzASR isn't listed), and much better on film dialogue. Also benchmark SeamlessM4T v2, which also
   translates speech directly to English.
 - Fine-tune on conversational and call-quality Armenian, for example with LoRA.
 
 **Translation**
 
-- Try NLLB-1.3B in 8-bit (`int8_float16`) to bring it inside its 0.5 s share, and
-  MADLAD-400 3B in 8-bit, which then fits in GPU memory.
+- Try MADLAD-400 3B in 8-bit, which may then fit in GPU memory.
 - Split multi-sentence phrases at "։" before translating (fixes dropped
   sentences), and normalise «» quotes.
 - Translate a sentence that was split across two phrases as one, or give the

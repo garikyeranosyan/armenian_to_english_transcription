@@ -140,6 +140,24 @@ Each entry uses this format:
 - **Reason:** on the same 200 FLEURS clips it has 19.5 % WER and 10.3 % CER against 45.9 % and 13.6 % for large-v3-turbo, for about 0.02 s more per clip (p95 0.87 s, max 1.01 s, inside the 2 s budget). Against Metric-AI's corrected FLEURS references its WER is 17.8 %, and through the full pipeline in the end-to-end replay 12–17 %.
 - **Alternatives considered:** large-v3-turbo (2.4 times the word errors); `BuzzASR/armenian` (its non-standard tokenizer converts without language tokens, so faster-whisper runs it as English-only; `convert_asr.py` now rejects such models); large-v3 (too slow); Meta MMS, SeamlessM4T v2 and NVIDIA's Armenian FastConformer (not benchmarked; FastConformer is the best open model on ArmBench-ASR).
 
+### 7. Transcription model is BuzzASR/armenian, with its token layout repaired (2026-10-27)
+
+- **Decision:** `ASR_MODEL` is `BuzzASR/armenian` (Whisper large-v3 fine-tuned with its own Armenian tokenizer, MIT licence); this replaces entry 6. `benchmarks/convert_asr.py` gives each special token the ID the model was trained with (from its `added_tokens.json`), names a freed slot with the empty token CTranslate2 uses to recognise a multilingual model, and refuses any conversion whose layout faster-whisper would misread.
+- **Reason:** on the 200 FLEURS clips it has 10.3 % WER and 3.1 % CER against 19.5 % and 10.3 % for entry 6's model, at 0.80 s mean per clip (at most 1.08 s on clips up to 10 s). Converted as is, its tokenizer gave Whisper's special tokens the wrong IDs and the model had no empty token, so faster-whisper ran it as English-only.
+- **Alternatives considered:** keeping `whisper-turbo-armenian` (faster and lighter on the GPU, but about twice the word errors); rejecting BuzzASR as before; running it through `transformers` and PyTorch, which read its generation config directly (slower, and PyTorch at runtime).
+
+### 8. The speech model runs in 8-bit with greedy decoding on the GPU (2026-10-27)
+
+- **Decision:** on the GPU, `GPU_COMPUTE_TYPE` is `int8_float16` and `BEAM_SIZE` is 1.
+- **Reason:** in float16 with beam 5, BuzzASR (2.9 GB) beside NLLB-1.3B (2.6 GB) overflowed the GPU memory and slowed every model: in the soak, 4 phrases went over 5 s (max 9.97 s) and translation p95 rose from 0.56 s to 1.82 s. With 8-bit and greedy decoding, the replays stay under 2.94 s and the soak p95 is 2.09 s, for 11.4 % WER instead of 10.3 %. Greedy decoding is also how BuzzASR reports its own scores.
+- **Alternatives considered:** float16 with beam 5 (most accurate, misses the 5 s limit); 8-bit with beam 5 (not measured); a shorter 6 s phrase cap (more split sentences, see `segmenter.py` 2); going back to `whisper-turbo-armenian`.
+
+### 9. Unclear phrases are retried at most twice (2026-10-27)
+
+- **Decision:** faster-whisper decodes at temperature 0 and, if the text repeats itself or the model is unsure, retries at 0.2 and then 0.4 (`TEMPERATURES`), instead of its default of up to five retries.
+- **Reason:** each retry is a full decode; the default took one soak phrase to 8.55 s and one 22 s benchmark clip to 7.84 s, while other phrases take about 1 s. Two retries keep most of the rescue for loops and unsure output at a bounded cost.
+- **Alternatives considered:** no retries (fastest and most predictable, but nothing rescues a greedy loop); keeping the default (breaks the 5 s limit on rare phrases); BuzzASR's repetition controls (`no_repeat_ngram_size`, `repetition_penalty`) instead of retries (not measured).
+
 ## translator.py
 
 ### 1. CTranslate2 with sentencepiece as the MT runtime (2026-10-24)
@@ -177,6 +195,12 @@ Each entry uses this format:
 - **Decision:** `MT_MODEL` is `nllb-200-distilled-1.3B`, replacing the provisional choice in entry 5, and accepting that translation alone takes longer than its 0.5 s share of the latency budget: mean 0.57 s, p95 0.87 s and max 1.41 s per FLEURS sentence on this laptop's GPU (263 of 400 translations over 0.5 s).
 - **Reason:** it is the most accurate candidate on 200 FLEURS sentences: chrF++ 55.0 from our ASR transcripts (`whisper-turbo-armenian`) and 63.2 from correct Armenian. The hard rule is the 5 s limit per phrase, and the end-to-end replay with this model stays far inside it (max 2.18 s, p95 1.70 s and 2.01 s), because live phrases are shorter than whole FLEURS sentences and translation overlaps the next transcription.
 - **Alternatives considered:** `nllb-200-distilled-600M` (fits the share at p95 0.43 s with 4 of 400 over, but chrF++ 52.6); `m2m100_1.2B` (chrF++ 42.4); `opus-mt-hy-en` (chrF++ 33.2, 11 of 200 over 0.5 s); `madlad400-3b-mt` (would not load on this laptop's GPU); NLLB-1.3B in `int8_float16` (probably faster, not measured).
+
+### 7. The translation model runs in 8-bit on the GPU (2026-10-27)
+
+- **Decision:** `GPU_COMPUTE_TYPE` is `int8_float16` for NLLB-200 distilled 1.3B.
+- **Reason:** it halves the model's GPU memory, so it fits beside BuzzASR (`transcriber.py` 8); on the 200 FLEURS sentences its scores stay the same (chrF++ 63.0 against 63.2 from correct text, 55.2 against 55.0 from ASR text), at 0.61 s mean against 0.57 s.
+- **Alternatives considered:** float16 (no more accurate, and with BuzzASR it overflows the GPU); NLLB-600M (fits easily, chrF++ 52.6 from ASR text).
 
 ## speakers.py
 

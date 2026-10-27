@@ -4,67 +4,67 @@ rootdir: C:\Users\Work\Desktop\armenian_to_english_transcription
 configfile: pyproject.toml
 testpaths: tests
 plugins: anyio-4.15.1
-collected 202 items / 198 deselected / 4 selected
+collected 205 items / 201 deselected / 4 selected
 
-tests\e2e\test_offline.py Loading modelsà
+tests\e2e\test_offline.py Loading modelsΓÇª
 
-Offline translation: It gave rise to the train, the car, and many other means of transportation.
+Offline translation: It gave us the train the car and many other transportation devices
 .
 tests\e2e\test_replay.py 
 === Alternating call ===
-[   1.5-   8.2 s] mic    1 entry: Me: It gave rise to the train, the car, and many other means of transportation.
-[   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand, ice and snow conditions are natural in many countries, and year-round traffic continues largely uninterrupted.
-[  21.1-  29.0 s] system 1 entry: Speaker 2: First, all horsemen wear boots with a heel designed for riding and a flat rather narrow sole.
-[  30.5-  46.4 s] mic    2 entries: Me: He's been looking at coin engravings for many countries, recent examples of work including the prime minister. | Me: The portraits on the new Canadian five- and one-hundred-dollar bills
-[  47.9-  61.5 s] system 2 entries: Speaker 1: Blogs can also be useful in helping students improve their writing. | Speaker 1: A reader's representative changes that mainly.
-[  63.0-  92.1 s] system 4 entries: Speaker 2: Researchers at Princeton University in the United States and Uppsala University in Sweden reported | Speaker 2: That new species evolved in just two generations, although the process is thought to have taken much longer, thanks to Darwin. | Speaker 2: Endemic Serenus, medium-sized terrestrial Serenus and non-flying Serenus cactus. | Speaker 2: The multiplication between serine osseoarthritis.
-[  93.6- 105.8 s] mic    2 entries: Me: For example, the world's most common photographic still image format is 35 millimeters, which is the predominant film size. | Me: Near the end of the analog film era.
-[ 107.3- 117.1 s] system 1 entry: Speaker 3: The capital of Moldova is Chisinau, the local language is Romanian, but Russian is widely spoken.
-[ 118.6- 135.5 s] system 2 entries: Speaker 3: In its early days, the show was only broadcast on a long-running Internet radio station. | Speaker 3: Twenty-Nine Radio, which focused on talk shows.
-[ 137.0- 153.0 s] mic    3 entries: Me: He also engraved banknotes for many countries, the latest examples of his work. | Me: Including portraits of the Prime Minister, new Canadian five and a hundred dollars. | Me: On the front of the bills.
-[ 154.5- 181.6 s] system 4 entries: Speaker 3: Most interpretations of technological determinism share two main conundrums. | Speaker 3: That technological development is itself moving in a direction far beyond cultural or political influence. | Speaker 3: And technology, in turn, has an impact on individual societies rather than... | Speaker 3: It's because of society.
-[ 183.1- 192.8 s] system 1 entry: Speaker 2: Within two weeks, American and French independent troops had liberated southern France and turned toward Germany.
-WER 13.7%, CER 7.7% over 12 clips
-Latency over 24 phrases: p50 1.37 s, p95 1.74 s, max 1.91 s; 0 over the 5 s limit.
-  pause detection  p95  0.87 s, budget 0.50 s: over, accepted
+[   1.5-   8.2 s] mic    1 entry: Me: It gave us the train the car and many other transportation devices
+[   9.7-  19.6 s] system 1 entry: Speaker 1: On the other hand ice and snow conditions are natural in many countries and throughout the year traffic continues in a largely uninterrupted fashion
+[  21.1-  29.0 s] system 1 entry: Speaker 2: In the early days of horseback riding, riders wore boots designed for riding with smooth, narrow heels.
+[  30.5-  46.4 s] mic    2 entries: Me: He also mined coins for many countries. Recent examples of his work include Prime Minister | Me: The portraits were the faces of the new Canadian five and one hundred dollar bills.
+[  47.9-  61.5 s] system 2 entries: Speaker 1: Blogs can also be helpful in improving students' handwriting while students often start their blog posts with poor grammar and spelling | Speaker 1: However, the presence of readers is fundamentally changing that.
+[  63.0-  92.1 s] system 4 entries: Speaker 2: Researchers at Princeton University in the United States and Uppsala University in Sweden reported | Speaker 2: It's been suggested that this process took much longer, thanks to Darwin. | Speaker 2: Endemic medium-sized ground serow and non-cat serow | Speaker 2: In the case of serine/threonine hypoglycemia, the number of breeding pairs between serine/threonine hypoglycemia and serine/threonine hypoglycemia varies greatly.
+[  93.6- 105.8 s] mic    2 entries: Me: For example, the most popular still image format in the world is 35mm, which is the predominant film size. | Me: At the end of the analog film era
+[ 107.3- 117.1 s] system 1 entry: Speaker 3: The capital of Moldova is Chi┼ƒin─âu. The local language is Romanian, but Russian is widely spoken.
+[ 118.6- 135.5 s] system 2 entries: Speaker 3: In its early days, the show was only broadcast on a long-running Internet radio station | Speaker 3: Tojinet Radio, which focused on talk shows
+[ 137.0- 153.0 s] mic    3 entries: Me: He also engraved banknotes for many countries. | Me: Including the portraits of the Prime Minister of Canada in the new five and one hundred dollar direction | Me: on the front of the bills
+[ 154.5- 181.6 s] system 4 entries: Speaker 3: Most interpretations of technological determinism share two main ideas. | Speaker 3: That technological progress itself is moving in a direction far beyond cultural or political influence. | Speaker 3: And technology, in turn, has an impact on specific societies, rather than specific people. | Speaker 3: It is a social conditioning.
+[ 183.1- 192.8 s] system 1 entry: Speaker 2: Within a week, American and French independent troops had liberated southern France and turned toward Germany.
+WER 12.7%, CER 4.4% over 12 clips
+Latency over 24 phrases: p50 1.27 s, p95 1.64 s, max 2.94 s; 0 over the 5 s limit.
+  pause detection  p95  0.88 s, budget 0.50 s: over, accepted
   queue            p95  0.00 s, budget 0.30 s: ok
-  speaker          p95  0.12 s, budget 0.20 s: ok
-  transcription    p95  0.97 s, budget 2.00 s: ok
-  translation      p95  0.50 s, budget 0.50 s: ok
+  speaker          p95  0.09 s, budget 0.20 s: ok
+  transcription    p95  0.86 s, budget 2.00 s: ok
+  translation      p95  0.80 s, budget 0.50 s: over, accepted
   printing         p95  0.00 s, budget 0.05 s: ok
 .
 === Both sides at once ===
-[   1.5-   7.9 s] mic    1 entry: Me: His fellow athletes also paid their respects to the moon.
-[   1.5-   8.2 s] system 1 entry: Speaker 2: If you want to be close to the concert, you have to get in early so you can hit the tent, the music.
-[   9.7-  15.2 s] mic    1 entry: Me: - Don't deform the site by scratching marks or scratching the structures...
-[   9.7-  19.0 s] system 1 entry: Speaker 3: Unfortunately, studying traffic flow is difficult because the driver's behavior is impossible to predict 100 percent.
-[  20.5-  31.3 s] mic    2 entries: Me: The number of paintings was so great that not everyone could afford St. Peter's Basilica. | Me: Acquire access to an ongoing dispatch ceremony.
-[  20.5-  28.4 s] system 1 entry: Speaker 3: Lions are the most numerous group of cats, living in large groups called predators.
-[  32.8-  45.2 s] mic    2 entries: Me: The International Gymnastics Federation supports joining the letter of the United States Olympic Committee and recognizes that the Olympic family clearly needs to encourage all of our athletes. | Me: A safe environment.
-[  32.8-  42.8 s] system 1 entry: Speaker 3: Plants get their food through photosynthesis, and they also provide shade.
-WER 12.0%, CER 2.5% over 8 clips
-Latency over 10 phrases: p50 1.60 s, p95 1.95 s, max 1.95 s; 0 over the 5 s limit.
+[   1.5-   7.9 s] mic    1 entry: Me: His fellow wrestlers also paid homage to the moon
+[   1.5-   8.2 s] system 1 entry: Speaker 2: If you want to be at the concert, you have to get in early so that the music is close.
+[   9.7-  15.2 s] mic    1 entry: Me: do not distort the site by tearing up signs or inscriptions on structures
+[   9.7-  19.0 s] system 1 entry: Speaker 3: It's hard to study traffic flow because you can't predict drivers' behavior 100 percent.
+[  20.5-  31.3 s] mic    2 entries: Me: The number of paintings was so great that it was not possible for everyone to go to the Plaza de Suprematros. | Me: (Matthew 28:19, 20) The apostle Paul wrote: "Let your light shine before men, that they may see your good works and glorify your Father which is in heaven".
+[  20.5-  28.4 s] system 1 entry: Speaker 3: Reindeer are the largest group of cats that live in large groups called prides.
+[  32.8-  45.2 s] mic    2 entries: Me: The American Gymnastics Association supports the letter from the United States Olympic Committee and recognizes that the Olympic family clearly needs to encourage all of our athletes. | Me: their safe environment.
+[  32.8-  42.8 s] system 1 entry: Speaker 3: Plants get their food through photosynthesis. They also provide shade.
+WER 12.8%, CER 4.7% over 8 clips
+Latency over 10 phrases: p50 1.81 s, p95 2.19 s, max 2.19 s; 0 over the 5 s limit.
   pause detection  p95  0.70 s, budget 0.50 s: over, accepted
-  queue            p95  0.25 s, budget 0.30 s: ok
-  speaker          p95  0.10 s, budget 0.20 s: ok
-  transcription    p95  0.97 s, budget 2.00 s: ok
-  translation      p95  0.96 s, budget 0.50 s: over, accepted
+  queue            p95  0.11 s, budget 0.30 s: ok
+  speaker          p95  0.06 s, budget 0.20 s: ok
+  transcription    p95  1.50 s, budget 2.00 s: ok
+  translation      p95  1.48 s, budget 0.50 s: over, accepted
   printing         p95  0.00 s, budget 0.05 s: ok
 .
 === Long monologue (47 s) ===
-[   2.6 s] Speaker 3: Everything in the universe is made of matter, and all matter is made of tiny particles called atoms.
-[  11.2 s] Speaker 1: In particular, it has been claimed that you can tell if a person with diabetes is lying by correctly interpreting micro-expressions.
-[  19.9 s] Speaker 1: This will allow gamers to control actions and movements in video games by moving the device around in a notebook.
-[  29.2 s] Speaker 1: It's thinner in water and thicker in mountains.
-[  33.4 s] Speaker 2: On the other hand, ice and snow conditions are natural in many countries and healthy all year round, with traffic continuing in a largely continuous fashion.
-[  43.3 s] Speaker 3: Do not disturb the site by carving signs or inscriptions on structures.
-Latency over 6 phrases: p50 1.56 s, p95 1.72 s, max 1.72 s; 0 over the 5 s limit.
+[   2.6 s] Speaker 3: Everything in the universe is made of matter, all matter is made of tiny particles called atoms.
+[  11.2 s] Speaker 1: In particular, they claim that you can tell if a person is lying by correctly interpreting micro-expressions.
+[  19.9 s] Speaker 1: This will allow gamers to control actions and movements in video games by determining the device in the notebook.
+[  29.2 s] Speaker 1: It's thinner in water and thicker in the mountains.
+[  33.4 s] Speaker 2: On the other hand ice and snow conditions are natural in many countries and healthy throughout the year traffic continues in a largely uninterrupted fashion
+[  43.3 s] Speaker 3: Do not disturb the site by tearing up signs or inscriptions on buildings
+Latency over 6 phrases: p50 1.48 s, p95 1.68 s, max 1.68 s; 0 over the 5 s limit.
   pause detection  p95  0.86 s, budget 0.50 s: over, accepted
   queue            p95  0.00 s, budget 0.30 s: ok
-  speaker          p95  0.10 s, budget 0.20 s: ok
-  transcription    p95  0.92 s, budget 2.00 s: ok
-  translation      p95  0.51 s, budget 0.50 s: over, accepted
+  speaker          p95  0.09 s, budget 0.20 s: ok
+  transcription    p95  0.90 s, budget 2.00 s: ok
+  translation      p95  0.59 s, budget 0.50 s: over, accepted
   printing         p95  0.00 s, budget 0.05 s: ok
 .
 
-================ 4 passed, 198 deselected in 304.02s (0:05:04) ================
+================ 4 passed, 201 deselected in 331.24s (0:05:31) ================

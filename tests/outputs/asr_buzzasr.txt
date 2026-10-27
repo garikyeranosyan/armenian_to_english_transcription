@@ -1,0 +1,12 @@
+﻿200 FLEURS hy_am clips, 38.5 min of audio
+
+buzzasr-armenian: loading ...
+buzzasr-armenian: transcripts saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\asr_buzzasr-armenian.csv
+
+whisper-turbo-armenian: loading ...
+whisper-turbo-armenian: transcripts saved to C:\Users\Work\Desktop\armenian_to_english_transcription\benchmarks\results\asr_whisper-turbo-armenian.csv
+
+| Model | Clips | WER | CER | Wrong script | Mean s | p95 s | Max s | > 2 s | RTF |
+|---|---|---|---|---|---|---|---|---|---|
+| buzzasr-armenian | 200 | 10.3% | 3.1% | 0 | 0.80 | 1.20 | 6.58 | 1 | 0.069 |
+| whisper-turbo-armenian | 200 | 19.5% | 10.3% | 0 | 0.65 | 0.84 | 0.96 | 0 | 0.056 |

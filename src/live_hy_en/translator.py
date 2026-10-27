@@ -8,7 +8,8 @@ from typing import Protocol
 from live_hy_en.transcriber import ModelLoadError, add_cuda_dll_dirs, has_cuda_gpu
 
 BEAM_SIZE = 4
-GPU_COMPUTE_TYPE = "float16"
+# 8-bit weights, so it fits in GPU memory beside the speech model.
+GPU_COMPUTE_TYPE = "int8_float16"
 CPU_COMPUTE_TYPE = "int8"
 END_OF_TEXT = "</s>"
 WARM_UP_TEXT = "Բարև, ինչպե՞ս ես։"
