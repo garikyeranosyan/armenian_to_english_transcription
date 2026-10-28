@@ -1,3 +1,6 @@
+# Python 3.12-3.14 on Windows x64: these exact versions have wheels for those
+# Pythons only (numpy 2.5 needs 3.12+; onnxruntime, sentencepiece and torch
+# have no Python 3.15 wheels yet). See README section 1.
 PyAudioWPatch==0.2.12.8
 pytest==8.4.2
 ruff==0.14.1

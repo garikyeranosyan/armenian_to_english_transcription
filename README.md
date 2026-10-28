@@ -42,27 +42,95 @@ EN: I'm fine, thank you.
 
 | | |
 |---|---|
-| OS | Windows 10/11, x64 (system audio is captured with WASAPI loopback) |
-| Python | 3.10 or newer (developed and tested with 3.14.3) |
-| GPU | NVIDIA GPU with a recent driver. The CUDA 12 libraries (cuBLAS, cuDNN) come from pip wheels, so no separate CUDA install is needed. Without a GPU the models run on the CPU, but too slowly for the 5 s limit |
-| Disk | About 4.2 GB for the models, plus several GB of Python packages (PyTorch, needed only for the one-time model conversion, is the largest) |
+| OS | Windows 10 or 11, x64 (system audio is captured with WASAPI loopback) |
+| Python | **3.12, 3.13 or 3.14** (developed and tested with 3.14.3). Python 3.15 does not work yet, and 3.10–3.11 no longer do: see below |
+| GPU | NVIDIA GPU with a recent driver and about 4 GB of free GPU memory. The CUDA 12 libraries (cuBLAS, cuDNN) come from pip wheels, so no separate CUDA install is needed. Without a GPU the models run on the CPU, but too slowly for the 5 s limit |
+| Disk | About 6 GB for the models, plus several GB of Python packages (PyTorch, needed only for the one-time model conversion, is the largest) |
 | Internet | Only during setup, to download packages and models |
+| Tools | Git |
 
-### 1.1 Get the code and install the packages
+**Why Python 3.12–3.14 only.** `requirements.txt` pins exact versions, and pip
+can only install packages that publish Windows wheels for your Python version.
+On 27 Oct 2026:
+
+- **Python 3.15:** `onnxruntime` (voice activity detection and speaker model),
+  `sentencepiece` (translation tokenizer) and `torch` (model conversion) have no
+  Windows wheels for 3.15, not even in their newest releases, so no choice of
+  versions installs on 3.15. Use 3.14 until they publish them.
+- **Python 3.10–3.11:** `numpy` 2.5 needs 3.12 or newer, and `onnxruntime` 1.31
+  has no 3.10 wheels.
+
+`pyproject.toml` declares `requires-python = ">=3.12,<3.15"`, so installing the
+program on another version stops with an error saying which Pythons it supports.
+
+### 1.1 Install Python 3.14
+
+Several Pythons can live side by side; the project uses its own virtual
+environment, so other Python installs are not affected.
+
+1. Check what is installed:
+
+   ```powershell
+   py --list
+   ```
+
+   If a 3.14 (or 3.12, 3.13) entry is listed, go to 1.2.
+2. Otherwise install Python 3.14 (64-bit) from
+   [python.org/downloads/windows](https://www.python.org/downloads/windows/).
+   With the Python install manager, this is `py install 3.14`; with the classic
+   installer, tick *Add python.exe to PATH* and keep the *py launcher* option.
+3. Open a new PowerShell window and check:
+
+   ```powershell
+   py -3.14 --version
+   # Python 3.14.x
+   ```
+
+### 1.2 Check the GPU driver
+
+```powershell
+nvidia-smi
+```
+
+This must show your NVIDIA GPU, its memory, and a "CUDA Version" of 12.x or
+higher. If the command is missing or shows an error, install the current driver
+from [nvidia.com/drivers](https://www.nvidia.com/drivers). No CUDA Toolkit is
+needed.
+
+### 1.3 Get the code and install the packages
 
 ```powershell
 git clone https://github.com/garikyeranosyan/armenian_to_english_transcription.git
 cd armenian_to_english_transcription
-python -m venv .venv
+
+# A virtual environment in .venv, made with Python 3.14
+py -3.14 -m venv .venv
+
+# Up-to-date pip, then every pinned package and the program itself
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-`requirements.txt` pins every version and also installs the program itself in
-editable mode (`-e .`), so `python -m live_hy_en` works from any folder.
-`transformers` and `torch` are only used by the one-time model conversion in 1.3;
-the running program never imports them.
+The install downloads several GB and takes a few minutes. `requirements.txt` pins
+every version and also installs the program itself in editable mode (`-e .`), so
+`python -m live_hy_en` works from any folder. `transformers` and `torch` are only
+used by the one-time model conversion in 1.5; the running program never imports
+them.
 
-### 1.2 (Optional) Hugging Face token
+All commands in this README call `.\.venv\Scripts\python.exe` directly, so the
+environment never needs activating. If you made `.venv` with another Python
+before (for example 3.15), delete it first: `Remove-Item -Recurse -Force .venv`.
+
+Check that the GPU is visible to the models:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from live_hy_en.transcriber import add_cuda_dll_dirs; add_cuda_dll_dirs(); import ctranslate2; print('CUDA GPUs:', ctranslate2.get_cuda_device_count())"
+# CUDA GPUs: 1
+```
+
+`0` means the models would run on the CPU: check the driver (1.2).
+
+### 1.4 (Optional) Hugging Face token
 
 All models and datasets used here are public, so a token isn't required, but
 downloads are faster and less likely to be rate-limited with one:
@@ -74,7 +142,7 @@ copy .env.example .env
 
 `.env` is git-ignored and never committed.
 
-### 1.3 Download and convert the models (once)
+### 1.5 Download and convert the models (once)
 
 Models go into `models/`, which is git-ignored. Run these from the project folder:
 
@@ -106,6 +174,53 @@ which is only needed for the benchmarks.
 If a model is missing, the program stops at startup with an error naming it.
 For the VAD, speaker and translation models, the error also says how to get the
 model.
+
+The conversion downloads about 9 GB in total (the original weights are larger
+than the converted ones) and takes roughly 10–20 minutes. The downloads are kept
+in the Hugging Face cache (`%USERPROFILE%\.cache\huggingface`), which can be
+deleted afterwards.
+
+Check that everything is in place:
+
+```powershell
+Get-ChildItem models, models\asr, models\mt
+# models\silero_vad.onnx, models\wespeaker_resnet34_LM.onnx,
+# models\asr\buzzasr-armenian, models\mt\nllb-200-distilled-1.3B
+```
+
+### 1.6 First run
+
+```powershell
+.\run.bat --list-devices   # your microphones and output devices
+.\run.bat                  # start with the Windows default devices
+```
+
+Startup takes about half a minute while the models load and warm up. Then set
+up the audio devices for a call as described in section 3.
+
+### 1.7 Test data (only for the tests and benchmarks)
+
+The end-to-end tests and the benchmarks use the FLEURS Armenian and English test
+sets (about 1 GB). The benchmarks download them into `benchmarks\data\` on first
+use:
+
+```powershell
+.\.venv\Scripts\python.exe benchmarks\asr_benchmark.py --models models\asr\buzzasr-armenian
+.\.venv\Scripts\python.exe benchmarks\mt_benchmark.py --models nllb-200-distilled-1.3B
+```
+
+### 1.8 Troubleshooting
+
+| Problem | Cause and fix |
+|---|---|
+| `pip install` fails with "No matching distribution found" for `onnxruntime`, `numpy`, `torch` or `sentencepiece`, or "requires a different Python" | `.venv` uses an unsupported Python (often 3.15). Delete `.venv` and recreate it with `py -3.14 -m venv .venv` (1.3) |
+| `py` is not recognised | The py launcher isn't installed: rerun the Python installer with the *py launcher* option, or use the full path to the 3.14 `python.exe` |
+| Startup warns "No CUDA GPU found; running models on the CPU" | The driver is missing or too old (1.2). The program still runs, but phrases take far longer than 5 s |
+| Error about `cublas64_12.dll` or `cudnn*.dll` | The NVIDIA pip wheels are missing from `.venv`: rerun `pip install -r requirements.txt` |
+| Startup stops: "Could not load speech model …" or names a missing model | A model wasn't downloaded or converted: rerun the matching command in 1.5 |
+| faster-whisper warns the model is "English-only" | `models\asr\buzzasr-armenian` was converted by an older `convert_asr.py`: delete the folder and convert it again |
+| Armenian shows as `?` or boxes | Start the program with `run.bat`, which switches the console to UTF-8, and use Windows Terminal or a font with Armenian letters |
+| Phrases come later than 5 s, every model slow | GPU memory is full: close other GPU-heavy programs (games, other AI tools); `nvidia-smi` shows what uses it |
 
 ---
 
@@ -425,7 +540,7 @@ Tests are derived from the requirements in PLAN.md §5, not from the code.
 .\.venv\Scripts\python.exe -m ruff check .
 ```
 
-The end-to-end and soak tests need the models from 1.3 and the FLEURS data,
+The end-to-end and soak tests need the models from 1.5 and the FLEURS data (1.7),
 which `benchmarks\asr_benchmark.py` downloads into `benchmarks\data\`. They are
 skipped automatically where those are missing.
 
