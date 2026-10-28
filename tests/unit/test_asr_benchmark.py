@@ -9,6 +9,7 @@ import soundfile
 import asr_benchmark
 from asr_benchmark import (
     ASR_BUDGET_S,
+    DOWNLOAD_TIMEOUT_S,
     HF_TOKEN_NAME,
     SAMPLE_RATE_HZ,
     Clip,
@@ -202,15 +203,18 @@ def test_missing_or_empty_token_gives_none(tmp_path, no_env_token, env_text):
 def test_download_sends_the_token_only_when_set(
     tmp_path, monkeypatch, token, expected_header
 ):
-    requests = []
+    requests, timeouts = [], []
 
-    def fake_urlopen(request):
+    def fake_urlopen(request, timeout):
         requests.append(request)
+        timeouts.append(timeout)
         return FakeReply(b"data")
 
     monkeypatch.setattr(asr_benchmark.urllib.request, "urlopen", fake_urlopen)
     target = tmp_path / "test.tsv"
     download("https://example.org/test.tsv", target, token)
     assert requests[0].get_header("Authorization") == expected_header
+    # A stalled connection must fail instead of hanging the benchmark.
+    assert timeouts == [DOWNLOAD_TIMEOUT_S]
     assert target.read_bytes() == b"data"
     assert list(tmp_path.iterdir()) == [target]

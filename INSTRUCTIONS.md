@@ -73,7 +73,7 @@ Follow **PEP 8** throughout. Check with a linter and formatter (e.g. `ruff` and 
 
 ### Code
 
-- Python 3.10+; **type hints** on all public functions and classes.
+- Python 3.12–3.14 (see `requires-python` in `pyproject.toml`); **type hints** on all public functions and classes.
 - Use **docstrings** (short, one line where possible) for public modules, classes and functions. Comments explain *why*, not *what*.
 - Imports at the top, grouped: standard library → third-party → local; no wildcard imports.
 - Use `dataclasses` for data passed between modules (segments, transcript entries).

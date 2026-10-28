@@ -6,7 +6,7 @@ import ctranslate2.converters
 import pytest
 
 import convert_mt
-from convert_mt import convert, main, parse_args, tokenizer_files
+from convert_mt import convert, main, parse_model_names, tokenizer_files
 from live_hy_en.translator import MT_MODELS
 
 
@@ -77,6 +77,13 @@ def test_one_failure_does_not_stop_the_others(fake_converter, capsys):
     )
 
 
-def test_unknown_model_is_rejected():
+def test_unknown_model_is_rejected(capsys):
     with pytest.raises(SystemExit):
-        parse_args(["google-translate"])
+        main(["google-translate"])
+    assert "unknown model(s): google-translate" in capsys.readouterr().err
+
+
+def test_named_models_are_chosen_in_order_and_none_means_all():
+    candidates = ["a", "b", "c"]
+    assert parse_model_names(["c", "a"], candidates, "") == ["c", "a"]
+    assert parse_model_names([], candidates, "") == candidates

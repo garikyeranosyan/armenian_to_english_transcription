@@ -7,7 +7,7 @@ cd /d "%~dp0"
 
 if not exist ".venv\Scripts\python.exe" (
     echo The virtual environment is missing. Set it up once with:
-    echo   python -m venv .venv
+    echo   py -3.14 -m venv .venv
     echo   .venv\Scripts\python.exe -m pip install -r requirements.txt
     exit /b 1
 )

@@ -70,29 +70,35 @@ def convert(name: str, models_dir: Path = MT_MODELS_DIR) -> Path:
     return convert_hub_model(model.hub_id, models_dir / name, tokenizer_files(model))
 
 
-def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    """Parse the converter's command-line options."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+def parse_model_names(
+    argv: Sequence[str] | None, candidates: Sequence[str], description: str
+) -> list[str]:
+    """Return the candidates named on the command line, or all of them.
+
+    Shared with convert_asr.py; an unknown name stops with a usage error.
+    """
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "models", nargs="*", help=f"default: all of {', '.join(MT_MODELS)}"
+        "models", nargs="*", help=f"default: all of {', '.join(candidates)}"
     )
-    args = parser.parse_args(argv)
-    unknown = [name for name in args.models if name not in MT_MODELS]
+    names = parser.parse_args(argv).models
+    unknown = [name for name in names if name not in candidates]
     if unknown:
         parser.error(f"unknown model(s): {', '.join(unknown)}")
-    args.models = args.models or list(MT_MODELS)
-    return args
+    return names or list(candidates)
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    """Convert each chosen candidate; return 1 if any of them failed."""
-    args = parse_args(argv)
+def convert_each(names: Sequence[str], convert_one: Callable[[str], Path]) -> int:
+    """Convert each model, going on after a failure; return 1 if any failed.
+
+    Shared with convert_asr.py.
+    """
     # Puts HF_TOKEN from .env into the environment, where the Hub client reads it.
     load_hf_token()
     failed = []
-    for name in args.models:
+    for name in names:
         try:
-            convert(name, MT_MODELS_DIR)
+            convert_one(name)
         except Exception as error:
             # One model failing (e.g. a removed upload) shouldn't stop the others.
             print(f"{name}: conversion failed: {error}")
@@ -100,6 +106,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if failed:
         print(f"Failed: {', '.join(failed)}")
     return 1 if failed else 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Convert each chosen candidate; return 1 if any of them failed."""
+    names = parse_model_names(argv, list(MT_MODELS), __doc__.splitlines()[0])
+    return convert_each(names, lambda name: convert(name, MT_MODELS_DIR))
 
 
 if __name__ == "__main__":

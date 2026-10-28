@@ -14,6 +14,7 @@ from live_hy_en.transcriber import (
     CPU_COMPUTE_TYPE,
     GPU_COMPUTE_TYPE,
     LANGUAGE,
+    TEMPERATURES,
     FasterWhisperRecognizer,
     ModelLoadError,
     Transcriber,
@@ -130,7 +131,7 @@ def test_default_model_is_the_benchmark_choice(fake_whisper, monkeypatch):
     _gpu_count(monkeypatch, 1)
     FasterWhisperRecognizer()
     assert fake_whisper.instances[0].model == ASR_MODEL
-    assert Path(ASR_MODEL).name == "whisper-turbo-armenian"
+    assert Path(ASR_MODEL).name == "buzzasr-armenian"
 
 
 def test_any_model_can_be_plugged_in(fake_whisper, monkeypatch):
@@ -177,5 +178,13 @@ def test_load_failure_gives_clear_error(monkeypatch):
         raise RuntimeError("CUDA driver version is insufficient")
 
     monkeypatch.setattr(faster_whisper, "WhisperModel", failing_model)
-    with pytest.raises(ModelLoadError, match="turbo-armenian.*on cuda.*CUDA driver"):
+    with pytest.raises(ModelLoadError, match="buzzasr-armenian.*on cuda.*CUDA driver"):
         FasterWhisperRecognizer(device="cuda")
+
+
+def test_unclear_phrases_are_retried_at_most_twice(fake_whisper):
+    # Each retry is a full decode; six attempts broke the 5 s limit (PLAN.md §2).
+    FasterWhisperRecognizer("any-model", device="cpu").recognize(SEGMENT)
+    temperatures = fake_whisper.instances[0].transcribe_options["temperature"]
+    assert temperatures == TEMPERATURES
+    assert temperatures[0] == 0.0 and len(temperatures) == 3

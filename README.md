@@ -17,7 +17,8 @@ EN: I'm fine, thank you.
 - **Two sources at once:** your microphone is always `Me`; everyone heard through
   the computer's sound output is `Speaker 1`, `Speaker 2`, … and keeps their label
   for the whole session.
-- **Live:** each phrase is printed about 1.5–2.5 s after it ends (hard limit 5 s).
+- **Live:** each phrase is printed about 1.3 s after it ends, 2.1 s at p95
+  (hard limit 5 s).
 - **Local only:** every model runs on the laptop (GPU first, CPU fallback). Nothing
   is sent to a cloud service, and the program runs with the network switched off.
 
@@ -25,7 +26,7 @@ EN: I'm fine, thank you.
 
 ## Contents
 
-1. [Setup](#1-setup)
+1. [Setup and deployment](#1-setup-and-deployment)
 2. [Running the program](#2-running-the-program)
 3. [Audio device setup](#3-audio-device-setup)
 4. [Architecture and modules](#4-architecture-and-modules)
@@ -36,33 +37,101 @@ EN: I'm fine, thank you.
 
 ---
 
-## 1. Setup
+## 1. Setup and deployment
 
 ### Requirements
 
 | | |
 |---|---|
-| OS | Windows 10/11, x64 (system audio is captured with WASAPI loopback) |
-| Python | 3.10 or newer (developed and tested with 3.14.3) |
-| GPU | NVIDIA GPU with a recent driver. The CUDA 12 libraries (cuBLAS, cuDNN) come from pip wheels, so no separate CUDA install is needed. Without a GPU the models run on the CPU, but too slowly for the 5 s limit |
-| Disk | About 4.2 GB for the models, plus several GB of Python packages (PyTorch, needed only for the one-time model conversion, is the largest) |
+| OS | Windows 10 or 11, x64 (system audio is captured with WASAPI loopback) |
+| Python | **3.12, 3.13 or 3.14** (developed and tested with 3.14.3). Python 3.15 does not work yet, and 3.10–3.11 no longer do: see below |
+| GPU | NVIDIA GPU with a recent driver and about 4 GB of free GPU memory. The CUDA 12 libraries (cuBLAS, cuDNN) come from pip wheels, so no separate CUDA install is needed. Without a GPU the models run on the CPU, but too slowly for the 5 s limit |
+| Disk | About 6 GB for the models, plus several GB of Python packages (PyTorch, needed only for the one-time model conversion, is the largest) |
 | Internet | Only during setup, to download packages and models |
+| Tools | Git |
 
-### 1.1 Get the code and install the packages
+**Why Python 3.12–3.14 only.** `requirements.txt` pins exact versions, and pip
+can only install packages that publish Windows wheels for your Python version.
+On 27 Oct 2026:
+
+- **Python 3.15:** `onnxruntime` (voice activity detection and speaker model),
+  `sentencepiece` (translation tokenizer) and `torch` (model conversion) have no
+  Windows wheels for 3.15, not even in their newest releases, so no choice of
+  versions installs on 3.15. Use 3.14 until they publish them.
+- **Python 3.10–3.11:** `numpy` 2.5 needs 3.12 or newer, and `onnxruntime` 1.31
+  has no 3.10 wheels.
+
+`pyproject.toml` declares `requires-python = ">=3.12,<3.15"`, so installing the
+program on another version stops with an error saying which Pythons it supports.
+
+### 1.1 Install Python 3.14
+
+Several Pythons can live side by side; the project uses its own virtual
+environment, so other Python installs are not affected.
+
+1. Check what is installed:
+
+   ```powershell
+   py --list
+   ```
+
+   If a 3.14 (or 3.12, 3.13) entry is listed, go to 1.2.
+2. Otherwise install Python 3.14 (64-bit) from
+   [python.org/downloads/windows](https://www.python.org/downloads/windows/).
+   With the Python install manager, this is `py install 3.14`; with the classic
+   installer, tick *Add python.exe to PATH* and keep the *py launcher* option.
+3. Open a new PowerShell window and check:
+
+   ```powershell
+   py -3.14 --version
+   # Python 3.14.x
+   ```
+
+### 1.2 Check the GPU driver
+
+```powershell
+nvidia-smi
+```
+
+This must show your NVIDIA GPU, its memory, and a "CUDA Version" of 12.x or
+higher. If the command is missing or shows an error, install the current driver
+from [nvidia.com/drivers](https://www.nvidia.com/drivers). No CUDA Toolkit is
+needed.
+
+### 1.3 Get the code and install the packages
 
 ```powershell
 git clone https://github.com/garikyeranosyan/armenian_to_english_transcription.git
 cd armenian_to_english_transcription
-python -m venv .venv
+
+# A virtual environment in .venv, made with Python 3.14
+py -3.14 -m venv .venv
+
+# Up-to-date pip, then every pinned package and the program itself
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-`requirements.txt` pins every version and also installs the program itself in
-editable mode (`-e .`), so `python -m live_hy_en` works from any folder.
-`transformers` and `torch` are only used by the one-time model conversion in 1.3;
-the running program never imports them.
+The install downloads several GB and takes a few minutes. `requirements.txt` pins
+every version and also installs the program itself in editable mode (`-e .`), so
+`python -m live_hy_en` works from any folder. `transformers` and `torch` are only
+used by the one-time model conversion in 1.5; the running program never imports
+them.
 
-### 1.2 (Optional) Hugging Face token
+All commands in this README call `.\.venv\Scripts\python.exe` directly, so the
+environment never needs activating. If you made `.venv` with another Python
+before (for example 3.15), delete it first: `Remove-Item -Recurse -Force .venv`.
+
+Check that the GPU is visible to the models:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from live_hy_en.transcriber import add_cuda_dll_dirs; add_cuda_dll_dirs(); import ctranslate2; print('CUDA GPUs:', ctranslate2.get_cuda_device_count())"
+# CUDA GPUs: 1
+```
+
+`0` means the models would run on the CPU: check the driver (1.2).
+
+### 1.4 (Optional) Hugging Face token
 
 All models and datasets used here are public, so a token isn't required, but
 downloads are faster and less likely to be rate-limited with one:
@@ -74,7 +143,7 @@ copy .env.example .env
 
 `.env` is git-ignored and never committed.
 
-### 1.3 Download and convert the models (once)
+### 1.5 Download and convert the models (once)
 
 Models go into `models/`, which is git-ignored. Run these from the project folder:
 
@@ -89,22 +158,113 @@ Invoke-WebRequest https://github.com/k2-fsa/sherpa-onnx/releases/download/speake
 (Get-FileHash models\wespeaker_resnet34_LM.onnx).Hash
 # must print E9848563DA86F263117134DFD7AD63C92355B37DE492B55E325400C9D9C39012
 
-# Transcription: Armenian Whisper fine-tune, converted to CTranslate2 (1.6 GB)
-.\.venv\Scripts\python.exe benchmarks\convert_asr.py
+# Transcription: BuzzASR's Armenian Whisper, converted to CTranslate2 (3.1 GB)
+.\.venv\Scripts\python.exe benchmarks\convert_asr.py buzzasr-armenian
 
 # Translation: NLLB-200 distilled 1.3B, converted to CTranslate2 (2.6 GB)
 .\.venv\Scripts\python.exe benchmarks\convert_mt.py nllb-200-distilled-1.3B
 ```
 
 The converters download each model from its publisher's own Hugging Face page and
-write it into its own folder (`models\asr\whisper-turbo-armenian`,
+write it into its own folder (`models\asr\buzzasr-armenian`,
 `models\mt\nllb-200-distilled-1.3B`). A failed conversion never leaves a
-half-written folder behind. `convert_mt.py` without arguments converts all five
-translation candidates, which is only needed for the benchmarks.
+half-written folder behind. Without arguments, `convert_asr.py` converts both
+transcription candidates and `convert_mt.py` all five translation candidates,
+which is only needed for the benchmarks.
 
 If a model is missing, the program stops at startup with an error naming it.
 For the VAD, speaker and translation models, the error also says how to get the
 model.
+
+The conversion downloads about 9 GB in total (the original weights are larger
+than the converted ones), so its time depends mostly on the connection. The
+downloads are kept in the Hugging Face cache (`%USERPROFILE%\.cache\huggingface`), which can be
+deleted afterwards.
+
+Check that everything is in place:
+
+```powershell
+Get-ChildItem models, models\asr, models\mt
+# models\silero_vad.onnx, models\wespeaker_resnet34_LM.onnx,
+# models\asr\buzzasr-armenian, models\mt\nllb-200-distilled-1.3B
+```
+
+### 1.6 First run
+
+```powershell
+.\run.bat --list-devices   # your microphones and output devices
+.\run.bat                  # start with the Windows default devices
+```
+
+At startup the models load and each runs once to warm up; `Listening to …`
+appears when they are ready. Then set up the audio devices for a call as
+described in section 3.
+
+### 1.7 Test data (only for the tests and benchmarks)
+
+The end-to-end tests and the benchmarks use the FLEURS Armenian and English test
+sets (about 1 GB). The benchmarks download them into `benchmarks\data\` on first
+use:
+
+```powershell
+.\.venv\Scripts\python.exe benchmarks\asr_benchmark.py --models models\asr\buzzasr-armenian
+.\.venv\Scripts\python.exe benchmarks\mt_benchmark.py --models nllb-200-distilled-1.3B
+```
+
+### 1.8 Troubleshooting
+
+| Problem | Cause and fix |
+|---|---|
+| `pip install` fails with "No matching distribution found" for `onnxruntime`, `numpy`, `torch` or `sentencepiece`, or "requires a different Python" | `.venv` uses an unsupported Python (often 3.15). Delete `.venv` and recreate it with `py -3.14 -m venv .venv` (1.3) |
+| `py` is not recognised | The py launcher isn't installed: rerun the Python installer with the *py launcher* option, or use the full path to the 3.14 `python.exe` |
+| Startup warns "No CUDA GPU found; running models on the CPU" | The driver is missing or too old (1.2). The program still runs, but phrases take far longer than 5 s |
+| Error about `cublas64_12.dll` or `cudnn*.dll` | The NVIDIA pip wheels are missing from `.venv`: rerun `pip install -r requirements.txt` |
+| Startup stops: "Could not load speech model …" or names a missing model | A model wasn't downloaded or converted: rerun the matching command in 1.5 |
+| faster-whisper warns the model is "English-only" | `models\asr\buzzasr-armenian` was converted by an older `convert_asr.py`: delete the folder and convert it again |
+| Armenian shows as `?` or boxes | Start the program with `run.bat`, which switches the console to UTF-8, and use Windows Terminal or a font with Armenian letters |
+| Phrases come later than 5 s, every model slow | GPU memory is full: close other GPU-heavy programs (games, other AI tools); `nvidia-smi` shows what uses it |
+
+Audio problems (no `Me` or no `Speaker` entries) are covered in section 3.
+
+### 1.9 Deploying to another computer, and updating
+
+The program is a folder with its own virtual environment; there is no installer
+and nothing is registered in Windows. To run it on another Windows computer
+(for example the one used for the call):
+
+1. **Meet the requirements** above on that computer: Python 3.12–3.14 (1.1) and
+   the NVIDIA driver (1.2).
+2. **Get the code and packages:** clone the repository and install
+   `requirements.txt` into a new `.venv` (1.3). A `.venv` can't be copied between
+   computers, because it records the Python install's path.
+3. **Get the models**, either way:
+   - convert them again (1.5), or
+   - copy the whole `models\` folder (about 6 GB) from a computer where they are
+     already converted. The converted models work on any computer; the PyTorch
+     conversion isn't needed then.
+4. **Check it:** `.\run.bat --list-devices`, then a short test as in section 3,
+   step 7.
+
+After setup the program needs no network: the models load from `models\`, and
+the offline test (section 6) checks that nothing connects anywhere.
+
+**Updating** to a newer version of the code:
+
+```powershell
+git pull
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If the README or `DECISIONS.md` names a different model than the one in
+`models\`, convert it as in 1.5. A model converted by an older `convert_asr.py`
+can stay unless the troubleshooting table above says otherwise.
+
+**Before each call**, a one-minute check:
+
+1. Headphones connected, and set as the call app's output device (section 3).
+2. Close other programs that use the GPU.
+3. Start `.\run.bat` before the call begins, wait for `Listening to …`, and say
+   a sentence: a `Me` entry should appear.
 
 ---
 
@@ -161,17 +321,32 @@ while you keep hearing the call normally.
    into.
 4. **Make the call app use the same output device** as `--output`: in the call
    app's audio settings, or leave both on the Windows default.
-5. **Windows sound settings (recommended):**
+5. **Allow microphone access:** in *Settings → Privacy & security → Microphone*,
+   turn on *Microphone access* and *Let desktop apps access your microphone*.
+   Without it, Windows gives the program silence and no `Me` entries appear.
+6. **Windows sound settings (recommended):**
    - *Sound → More sound settings → Communications*: choose "Do nothing", so
      Windows doesn't lower other sounds during calls.
    - *Microphone → Properties*: turn off "Audio enhancements" if the transcript of
      your own speech is poor.
-6. **Check it:** start the program and say a sentence, and play a few seconds of
+   - *Output device → Properties → Advanced*: untick "Allow applications to take
+     exclusive control of this device". WASAPI loopback only works in shared
+     mode, so a call app holding the device exclusively leaves it silent.
+7. **Check it:** start the program and say a sentence, and play a few seconds of
    any Armenian audio through the output device. A `Me` entry and a `Speaker 1`
    entry should both appear.
 
 Device sample rates and channel counts don't matter: every device is opened in
 its own format and converted to 16 kHz mono.
+
+| Problem | Cause and fix |
+|---|---|
+| No `Me` entries | Wrong microphone (check `--list-devices` and pass `--mic`), the microphone is muted, or Windows blocks microphone access (step 5) |
+| No `Speaker` entries | The call app plays through a different device than `--output` (step 4), the device is held in exclusive mode (step 6), or the call is muted |
+| The call's words appear again as `Me` | The microphone hears loudspeakers: use headphones (step 1) |
+| Poor transcripts of the call only | A Bluetooth headset in hands-free mode (step 2), or a weak connection on the other side |
+| Warning "audio overflowed; some audio was lost" | The computer was too busy to collect audio in time: close heavy programs |
+| Startup error: output "cannot be captured (no WASAPI loopback)" | Choose another output device; virtual or disconnected devices may have no loopback |
 
 ---
 
@@ -232,18 +407,18 @@ Design principles:
 
 ### 4.2 Modules (`src/live_hy_en/`)
 
-| Module | Responsibility |
+| Module | Purpose |
 |---|---|
-| `__main__.py` | Entry point: parse options, list devices or run a session, show setup errors clearly |
-| `config.py` | Command-line options; list devices; resolve the microphone and the output device's loopback by number or name |
-| `capture.py` | Record the microphone and WASAPI loopback; convert to 16 kHz mono float32 (streaming soxr resampler); time-stamp frames on one shared session clock |
-| `segmenter.py` | Silero VAD (onnxruntime, CPU): cut each source's audio into phrases with their start and end times |
-| `speakers.py` | `Me` for the microphone; WeSpeaker voiceprints and online clustering into stable `Speaker N` labels for system audio |
-| `transcriber.py` | Armenian speech → Armenian text with faster-whisper (CTranslate2); drop empty or wrong-script output |
-| `translator.py` | Armenian → English with CTranslate2 and sentencepiece; the candidate models and their prompt formats |
-| `pipeline.py` | Threads and queues connecting the modules; model loading and warm-up; start-up and Ctrl+C shutdown |
-| `output.py` | All terminal output, with the console switched to UTF-8 |
-| `metrics.py` | Timestamps at every step; per-phrase latency, session p50/p95/max, early warning for slow phrases |
+| `__main__.py` | Entry point: starts a session or lists the audio devices |
+| `config.py` | Command-line options and choice of microphone and output device |
+| `capture.py` | Records the microphone and the system sound (WASAPI loopback) as 16 kHz mono |
+| `segmenter.py` | Cuts each source's audio into phrases at pauses (Silero VAD) |
+| `transcriber.py` | Armenian speech → Armenian text (BuzzASR with faster-whisper) |
+| `speakers.py` | Labels each phrase `Me` or `Speaker N` (WeSpeaker voiceprints) |
+| `translator.py` | Armenian text → English text (NLLB-200 with CTranslate2) |
+| `pipeline.py` | Connects the modules with threads and queues; loads the models |
+| `output.py` | Prints each entry and every other message to the terminal |
+| `metrics.py` | Measures each phrase's latency and reports the session summary |
 
 ### 4.3 Repository layout
 
@@ -252,8 +427,11 @@ Design principles:
 ├── DECISIONS.md               design and model decisions with alternatives and reasons
 ├── TODO.md                    deferred work
 ├── INSTRUCTIONS.md            coding and working rules for the project
-├── requirements.txt           pinned dependencies; pyproject.toml declares the package
+├── requirements.txt           pinned dependencies for Python 3.12–3.14
+├── pyproject.toml             the package, supported Pythons, pytest and ruff settings
+├── .env.example               template for the optional Hugging Face token (1.4)
 ├── run.bat                    start the program from the project's .venv
+├── chats/                     every Claude session of the project, exported unedited
 ├── src/live_hy_en/            the program (modules above)
 ├── benchmarks/                offline model comparisons on this laptop
 │   ├── asr_benchmark.py         Whisper models and fine-tunes on FLEURS Armenian
@@ -278,10 +456,15 @@ candidate whose speed fits its share of the latency budget (PLAN.md §2:
 transcription ≤ 2.0 s, translation ≤ 0.5 s, speaker ID ≤ 0.2 s per phrase, 5 s
 hard limit end to end). The full reasoning is in `DECISIONS.md`.
 
-### 5.1 Transcription: `Chillarmo/whisper-large-v3-turbo-armenian`
+The benchmarks' p95 figures below were computed before an off-by-one fix in
+`metrics.p95()` (28 Oct): with 200 or 400 values it took the next-slower value,
+so those p95 columns are very slightly too high.
 
-An Armenian fine-tune of Whisper large-v3-turbo, run with faster-whisper
-(CTranslate2, float16 on the GPU, beam size 5).
+### 5.1 Transcription: `BuzzASR/armenian`
+
+BuzzASR's Armenian model: Whisper large-v3 fine-tuned with its own Armenian
+tokenizer (MIT licence, Findings of EMNLP 2026), run with faster-whisper
+(CTranslate2, 8-bit weights on the GPU, greedy decoding, at most two retries).
 
 Benchmark: `benchmarks/asr_benchmark.py` on 200 clips (38.5 min) of the FLEURS
 `hy_am` test set, timed through the program's own recognizer on the laptop's GPU.
@@ -289,49 +472,73 @@ WER is word error rate, CER is character error rate; lower is better.
 
 | Model | WER | CER | Mean time per clip | Max time | Result |
 |---|---|---|---|---|---|
-| **whisper-turbo-armenian (fine-tune)** | **19.5 %** | **10.3 %** | 0.66 s | 1.01 s | **chosen** |
+| **BuzzASR/armenian, 8-bit, greedy** | **11.4 %** | **3.4 %** | 0.81 s | 7.84 s | **chosen** |
+| BuzzASR/armenian, float16, beam 5 | 10.3 % | 3.1 % | 0.80 s | 6.58 s | most accurate, but too slow beside NLLB (below) |
+| whisper-turbo-armenian (fine-tune) | 19.5 % | 10.3 % | 0.65 s | 0.96 s | 1.9× the word errors |
 | Whisper large-v3-turbo | 45.9 % | 13.6 % | 0.64 s | 0.95 s | 2.4× the word errors |
 | Whisper large-v3 | 42.6 % | – | 3.11 s | – | 175 of 200 clips over the 2 s budget |
 | Whisper medium | 56.1 % | – | – | – | 123 clips over budget |
 | Whisper small | 81.3 % | – | – | – | too inaccurate |
-| BuzzASR/armenian (fine-tune) | – | – | – | – | rejected, see below |
 
 (The large-v3, medium and small figures come from the first benchmark run on
 24 Oct; dashes mark values that run didn't keep.)
 
-- Scored against Metric-AI's manually corrected FLEURS transcripts (used by the
-  ArmBench-ASR leaderboard), the fine-tune reaches 17.8 % WER and 9.5 % CER.
-  Some of the 19.5 % is errors in FLEURS's own transcripts.
-- Through the full pipeline in the end-to-end replay, the WER is 12–17 %.
-- **BuzzASR** was rejected because its tokenizer has a non-standard token order.
-  After conversion it has no language tokens, so faster-whisper treats it as
-  English-only and transcribes Armenian as English. `convert_asr.py` now refuses
-  any model without an Armenian language token.
+- **Why 8-bit and greedy:** in float16 with beam search, BuzzASR (2.9 GB) and
+  NLLB-1.3B (2.6 GB) together overflowed the laptop's GPU memory, which slowed
+  every model: in the 24-minute soak, 4 phrases went over 5 s (max 9.97 s) and
+  translation p95 rose from 0.56 s to 1.82 s. 8-bit weights halve the memory and
+  greedy decoding, which is how BuzzASR reports its own scores, shortens each
+  decode. Together they cost 1.1 points of WER.
+- **Speed on live-length phrases:** on the 90 clips up to 10 s (the segmenter's
+  cap), BuzzASR takes at most 0.88 s, inside the 2 s budget.
+- **Retries:** when a result repeats itself or the model is unsure,
+  faster-whisper decodes again at a higher temperature. Its default of up to five
+  retries took one phrase to 8.55 s in the soak, and one 22 s benchmark clip to
+  7.84 s. The program allows at most two (temperatures 0, 0.2 and 0.4), which
+  keeps most of the rescue at a bounded cost.
+- **Training data:** BuzzASR was trained on FLEURS and Common Voice. Its test
+  split was not used for training, but the recordings and style are the same,
+  so its lead on conversational audio may be smaller than on FLEURS.
+- **Conversion:** its Armenian tokenizer lists Whisper's special tokens twice,
+  and the copies that `transformers` uses have different IDs from the ones the
+  model was trained with. It also lacks the empty token by which CTranslate2
+  recognises a multilingual model. Converted as is, faster-whisper ran it as
+  English-only. `convert_asr.py` now gives each special token its trained ID
+  (from the model's `added_tokens.json`), adds the empty token in a freed slot,
+  and refuses any conversion whose token layout faster-whisper would misread.
+- The previous choice, Chillarmo's turbo fine-tune, scores 17.8 % WER and 9.5 %
+  CER against Metric-AI's manually corrected FLEURS transcripts (used by the
+  ArmBench-ASR leaderboard), and 12–17 % WER in the end-to-end replay.
 - **Not benchmarked here:** Meta MMS, SeamlessM4T v2 and NVIDIA's Armenian
   FastConformer (see section 8).
 
 ### 5.2 Translation: `facebook/nllb-200-distilled-1.3B`
 
-Run with CTranslate2 (float16 on the GPU, beam size 4) and sentencepiece.
+Run with CTranslate2 (8-bit weights on the GPU, beam size 4) and sentencepiece.
 
 Benchmark: `benchmarks/mt_benchmark.py` translates the same 200 FLEURS sentences
-twice: from the correct Armenian text, and from the chosen ASR model's
-transcripts, which is what the program really translates. Both are scored against
-FLEURS's English references with chrF++ and BLEU (higher is better).
+twice: from the correct Armenian text, and from an ASR model's transcripts,
+which is what the program really translates. The figures below used the previous
+ASR model's transcripts (Chillarmo's turbo fine-tune), so the ASR-text column is
+pessimistic; the benchmark now uses the program's own ASR model by default. Both
+are scored against FLEURS's English references with chrF++ and BLEU (higher is
+better).
 
 | Model | chrF++ correct text | chrF++ ASR text | BLEU ASR text | Mean time | p95 time | Result |
 |---|---|---|---|---|---|---|
-| **NLLB-200 distilled 1.3B** | **63.2** | **55.0** | **29.8** | 0.57 s | 0.87 s | **chosen** |
+| **NLLB-200 distilled 1.3B, 8-bit** | **63.0** | **55.2** | **30.5** | 0.61 s | 0.90 s | **chosen** |
+| NLLB-200 distilled 1.3B, float16 | 63.2 | 55.0 | 29.8 | 0.57 s | 0.87 s | same accuracy, twice the GPU memory |
 | NLLB-200 distilled 600M | 60.4 | 52.6 | 27.7 | 0.28 s | 0.43 s | fits 0.5 s, less accurate |
 | M2M100 1.2B | 49.1 | 42.4 | 18.3 | – | – | much less accurate |
 | OPUS-MT hy→en | 37.5 | 33.2 | 10.7 | 0.15 s | 0.24 s | least accurate; 11 of 200 translations over 0.5 s |
 | MADLAD-400 3B | – | – | – | – | – | wouldn't load in the laptop's GPU memory |
 
-NLLB-1.3B takes longer than its 0.5 s share on whole FLEURS sentences: 263 of 400
-translations went over. This was accepted because accuracy matters more here and
-the end-to-end latency stays far inside 5 s. Live phrases are shorter than whole
-FLEURS sentences, and translation overlaps the next transcription. In the
-24-minute soak run, translation p95 was 0.56 s and total latency max 2.48 s.
+NLLB-1.3B takes longer than its 0.5 s share on whole FLEURS sentences: 279 of 400
+translations went over in 8-bit (263 in float16). This was accepted because
+accuracy matters more here and live phrases are shorter than whole FLEURS
+sentences: in the 24-minute soak, translation p95 was 0.65 s. 8-bit was chosen
+for memory, not speed: alone on the GPU it is no faster, but it leaves room for
+the speech model.
 
 ### 5.3 Speaker identification: WeSpeaker ResNet34 + online clustering
 
@@ -387,7 +594,7 @@ from 89 % to 13 %.
 Tests are derived from the requirements in PLAN.md §5, not from the code.
 
 ```powershell
-# Unit tests: fast, models replaced by fakes (197 tests)
+# Unit tests: fast, models replaced by fakes (206 tests)
 .\.venv\Scripts\python.exe -m pytest
 
 # End-to-end: real models, FLEURS audio replayed through the pipeline in real time (~5 min)
@@ -401,19 +608,26 @@ Tests are derived from the requirements in PLAN.md §5, not from the code.
 .\.venv\Scripts\python.exe -m ruff check .
 ```
 
-The end-to-end and soak tests need the models from 1.3 and the FLEURS data,
+The end-to-end and soak tests need the models from 1.5 and the FLEURS data (1.7),
 which `benchmarks\asr_benchmark.py` downloads into `benchmarks\data\`. They are
 skipped automatically where those are missing.
 
-| Requirement | Test | Latest result (26 Oct 2026) |
+Results below were measured on 27 Oct with BuzzASR in 8-bit with greedy
+decoding. The replays ran with faster-whisper's default five retries, the soak
+with the two-retry limit (5.1). The soak still fails on one phrase in 187
+(7.00 s; 8.55 s with five retries), most likely a decode stuck in a loop up to
+faster-whisper's 448-token limit; see section 7.
+
+| Requirement | Test | Latest result (27 Oct 2026) |
 |---|---|---|
-| Latency ≤ 5 s, p95 ≈ 3.5 s | every replay, measured by Metrics | max 1.95 s (replays), 2.48 s (soak); p95 1.72–2.08 s |
+| Latency ≤ 5 s, p95 ≈ 3.5 s | every replay, measured by Metrics | replays: max 2.94 s, p95 1.64–2.19 s; soak: p95 2.09 s, but one phrase 7.00 s (see above) |
 | Step budgets (PLAN.md §2) | every replay prints each step's p95 against its budget | all within budget except the accepted overruns below |
 | Printed live, nothing lost | alternating call, both sides at once, long monologue | all phrases shown during playback |
 | `Me` vs `Speaker N` | replay + unit tests | correct for every phrase |
-| Both sides talking at once | replay | max 1.95 s |
-| Long monologue (47 s nonstop) | replay | split into 6 phrases, max 1.72 s |
-| Reliable for 20+ min | soak | 187 phrases, none lost; delay not growing (p95 2.22 s → 1.77 s); memory +97 MB after settling |
+| Accuracy through the pipeline | every replay | 12.5–12.8 % WER (13.7 % with the previous model) |
+| Both sides talking at once | replay | max 2.19 s |
+| Long monologue (47 s nonstop) | replay | split into 6 phrases, max 1.68 s |
+| Reliable for 20+ min | soak | 187 phrases, none lost; delay growth and memory not checked, as that run stopped at the latency check (26 Oct, previous model: delay not growing, memory +97 MB). The soak now reports every check before failing |
 | Local models only | models load and run with all network connections blocked | no connection attempts |
 | No weights, audio or secrets committed | `test_repository.py` | passes |
 
@@ -428,13 +642,17 @@ skipped automatically where those are missing.
 
 ## 7. Known limitations
 
+- **One phrase in about 200 can still miss the 5 s limit.** When greedy decoding
+  gets stuck in a loop, faster-whisper keeps generating up to 448 tokens and then
+  retries, although a 10 s Armenian phrase needs only about 40 of BuzzASR's
+  tokens. In the soak this took one phrase in 187 to 7.00 s. Capping the tokens
+  per decode (about 128) is the planned fix; it is not yet measured.
 - **Accuracy on real conversation is unmeasured and likely lower.** All ASR and MT
-  numbers come from FLEURS, which is read Wikipedia-style sentences. On the
-  ArmBench-ASR leaderboard, the chosen ASR model scores about 25 % WER on FLEURS
-  but about 82 % on film dialogue. Fast, casual or accented speech, Western
-  Armenian and noisy calls will produce more errors.
-- **No rehearsal with a real call yet.** Speaker labels and latency were measured
-  on simulated and replayed audio, not on a call with real remote participants.
+  numbers come from FLEURS, which is read Wikipedia-style sentences, and BuzzASR
+  was trained on FLEURS-style audio. On the ArmBench-ASR leaderboard, the previous
+  ASR model (Chillarmo's turbo fine-tune) scores about 25 % WER on FLEURS but
+  about 82 % on film dialogue; BuzzASR isn't on that leaderboard. Fast, casual
+  or accented speech, Western Armenian and noisy calls will produce more errors.
 - **Translation errors.** Wrong word senses (for example "maria" → "water"), a
   dropped second sentence when one phrase contains two, «» quotes appearing as
   "⁇", and half-sentence translations when a long sentence is split into two
@@ -455,22 +673,25 @@ skipped automatically where those are missing.
 - **Setup is heavy.** The one-time model conversion needs PyTorch and
   transformers, which take several GB.
 
+---
+
 ## 8. What could be improved with more time
 
 **Transcription**
 
+- Cap the tokens per decode (`max_new_tokens`, about 128) so a decode stuck in a
+  loop ends early; this should close the last soak overrun (section 7).
 - Build a test set of real conversational and call audio, recorded and
   transcribed locally, and benchmark on it instead of read speech.
 - Benchmark NVIDIA's `stt_hy_fastconformer_hybrid_large_pc`: the best open model
-  on ArmBench-ASR, at 19.9 % average WER against 33.0 % for the current model, and
-  much better on film dialogue. Also benchmark SeamlessM4T v2, which also
-  translates speech directly to English.
+  on ArmBench-ASR, at 19.9 % average WER against 33.0 % for the previous model
+  (BuzzASR isn't listed), and much better on film dialogue. Also benchmark
+  SeamlessM4T v2, which also translates speech directly to English.
 - Fine-tune on conversational and call-quality Armenian, for example with LoRA.
 
 **Translation**
 
-- Try NLLB-1.3B in 8-bit (`int8_float16`) to bring it inside its 0.5 s share, and
-  MADLAD-400 3B in 8-bit, which then fits in GPU memory.
+- Try MADLAD-400 3B in 8-bit, which may then fit in GPU memory.
 - Split multi-sentence phrases at "։" before translating (fixes dropped
   sentences), and normalise «» quotes.
 - Translate a sentence that was split across two phrases as one, or give the
@@ -486,5 +707,22 @@ skipped automatically where those are missing.
 
 - Process the two sources' phrases in parallel when both sides talk at once.
 - Cut long phrases at the quietest point instead of at the 10 s cap.
-- One setup script that downloads, converts and checks every model.
 - A check at startup that both sources actually deliver sound.
+
+**Deployment and packaging**
+
+- **Containerization.** A Docker image would pin the whole environment (Python,
+  packages, CUDA libraries) and make setup one command. It fits the
+  Linux-friendly parts best: the model conversion and the benchmarks need
+  PyTorch and several GB of tools, and could run in a CUDA container (with the
+  NVIDIA Container Toolkit) that writes the converted models into a mounted
+  `models\` folder. The live program itself can't simply move into a container,
+  because WASAPI loopback capture needs the Windows audio system, which Linux
+  containers can't reach. Containerizing it fully would mean splitting it in two:
+  a small native Windows capture program, and the segmentation, models and
+  printing in a GPU container, connected by a local socket. That adds a network
+  hop to every phrase, which would have to be measured against the 5 s limit.
+- One setup script that checks the Python version and GPU, downloads and
+  converts every model, and verifies the result.
+- A single Windows download (for example built with PyInstaller) with the
+  converted models, so the call computer needs no Python setup.

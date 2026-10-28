@@ -1,9 +1,11 @@
 """Tests for the MT benchmark (PLAN.md §5.1: chrF/BLEU on clean text and ASR output)."""
 
 import csv
+from pathlib import Path
 
 import pytest
 
+from live_hy_en.transcriber import ASR_MODEL
 from mt_benchmark import (
     MT_BUDGET_S,
     Sentence,
@@ -13,6 +15,7 @@ from mt_benchmark import (
     evaluate,
     format_table,
     load_sentences,
+    parse_args,
     summarize,
 )
 
@@ -93,3 +96,8 @@ def test_format_table_has_one_row_per_model():
     assert len(lines) == 4
     assert lines[2].startswith("| nllb | 1 | 100.0 |")
     assert f"> {MT_BUDGET_S:g} s" in lines[0]
+
+
+def test_asr_input_defaults_to_the_programs_own_asr_model():
+    # The program translates its own model's transcripts, so the benchmark must.
+    assert parse_args([]).asr_model == Path(ASR_MODEL).name == "buzzasr-armenian"

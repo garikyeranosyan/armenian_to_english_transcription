@@ -17,10 +17,17 @@ ASR_MODELS_DIR = Path(__file__).resolve().parents[2] / "models" / "asr"
 # Chosen by benchmarks/asr_benchmark.py: lowest WER on FLEURS hy_am. Any
 # faster-whisper model name, Hugging Face model ID or local CTranslate2 folder
 # works here.
-ASR_MODEL = str(ASR_MODELS_DIR / "whisper-turbo-armenian")
+ASR_MODEL = str(ASR_MODELS_DIR / "buzzasr-armenian")
 LANGUAGE = "hy"
-BEAM_SIZE = 5
-GPU_COMPUTE_TYPE = "float16"
+# Greedy decoding, as BuzzASR reports its scores: beam search on its 32-layer
+# decoder made phrases miss the 5 s limit.
+BEAM_SIZE = 1
+# Decode at 0, then retry at most twice when the text repeats itself or the model
+# is unsure. faster-whisper's default six attempts took 8 s on one phrase.
+TEMPERATURES = (0.0, 0.2, 0.4)
+# 8-bit weights halve GPU memory: in float16, BuzzASR and NLLB-1.3B together
+# overflowed the laptop's GPU and slowed every model past the 5 s limit.
+GPU_COMPUTE_TYPE = "int8_float16"
 CPU_COMPUTE_TYPE = "int8"
 # Output below this share of Armenian letters counts as the wrong script.
 MIN_ARMENIAN_RATIO = 0.5
@@ -105,6 +112,7 @@ class FasterWhisperRecognizer:
             samples,
             language=LANGUAGE,
             beam_size=BEAM_SIZE,
+            temperature=TEMPERATURES,
             # Segments are independent phrases; earlier text only spreads errors.
             condition_on_previous_text=False,
             without_timestamps=True,

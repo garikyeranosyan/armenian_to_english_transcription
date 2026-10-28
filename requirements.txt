@@ -1,3 +1,6 @@
+# Python 3.12-3.14 on Windows x64: these exact versions have wheels for those
+# Pythons only (numpy 2.5 needs 3.12+; onnxruntime, sentencepiece and torch
+# have no Python 3.15 wheels yet). See README section 1.
 PyAudioWPatch==0.2.12.8
 pytest==8.4.2
 ruff==0.14.1
@@ -8,6 +11,9 @@ kaldi-native-fbank==1.22.4
 soundfile==0.14.0
 python-dotenv==1.2.4
 faster-whisper==1.2.1
+# benchmarks/convert_asr.py rebuilds Whisper tokenizers and reads Hub files.
+tokenizers==0.23.3
+huggingface_hub==2.3.0
 ctranslate2==4.8.3
 sentencepiece==0.2.2
 sacrebleu==2.6.0
