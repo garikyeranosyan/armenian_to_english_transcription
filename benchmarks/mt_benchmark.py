@@ -6,6 +6,7 @@ ASR transcripts (real input); FLEURS en_us gives the English references.
 Run from the project folder, after benchmarks/convert_mt.py:
     python benchmarks/mt_benchmark.py
     python benchmarks/mt_benchmark.py --models opus-mt-hy-en --asr-model small
+The ASR transcripts default to the program's own model (transcriber.ASR_MODEL).
 """
 
 import argparse
@@ -33,6 +34,7 @@ from asr_benchmark import (  # noqa: E402
     parse_fleurs_tsv,
 )
 from live_hy_en.metrics import p95  # noqa: E402
+from live_hy_en.transcriber import ASR_MODEL  # noqa: E402
 from live_hy_en.translator import (  # noqa: E402
     MT_MODELS,
     CTranslate2Translator,
@@ -40,7 +42,8 @@ from live_hy_en.translator import (  # noqa: E402
 )
 
 ENGLISH_DIR = BENCHMARK_DIR / "data" / "fleurs_en_us"
-DEFAULT_ASR_MODEL = "whisper-turbo-armenian"
+# The program's own ASR model, whose transcripts the program really translates.
+DEFAULT_ASR_MODEL = Path(ASR_MODEL).name
 # Translation share of the 5 s latency budget (PLAN.md §2).
 MT_BUDGET_S = 0.5
 # chrF++ (character n-grams plus word bigrams), as reported for FLORES-200.

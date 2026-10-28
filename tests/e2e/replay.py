@@ -22,6 +22,7 @@ from live_hy_en.output import TranscriptEntry
 from live_hy_en.pipeline import Pipeline
 from live_hy_en.segmenter import VAD_MODEL_PATH, WINDOW_SAMPLES
 from live_hy_en.speakers import MIC_LABEL, SPEAKER_MODEL_PATH
+from live_hy_en.transcriber import ASR_MODEL
 from live_hy_en.translator import MT_MODEL, MT_MODELS_DIR
 
 needs_laptop = pytest.mark.skipif(
@@ -30,6 +31,7 @@ needs_laptop = pytest.mark.skipif(
         for path in (
             VAD_MODEL_PATH,
             SPEAKER_MODEL_PATH,
+            Path(ASR_MODEL),
             MT_MODELS_DIR / MT_MODEL,
             DATA_DIR / "test.tar.gz",
         )
@@ -217,14 +219,34 @@ def report(title: str, placed, shown, pipeline) -> float:
     return wer
 
 
+def latency_failures(
+    pipeline: Pipeline, limit_s: float, also_accepted: frozenset[str] = frozenset()
+) -> list[str]:
+    """Return how the run missed its latency targets, if it did: every phrase
+    within the hard limit, p95 on target, and each step within its budget."""
+    summary = pipeline.metrics.summary()
+    if summary is None:
+        return ["no phrase was shown"]
+    failures = []
+    if summary.max_s > limit_s:
+        failures.append(
+            f"{summary.over_limit_count} phrase(s) over the {limit_s:g} s limit "
+            f"(max {summary.max_s:.2f} s)"
+        )
+    if summary.p95_s > P95_TARGET_S:
+        failures.append(f"p95 {summary.p95_s:.2f} s over {P95_TARGET_S:g} s")
+    over = stages_over_budget(pipeline.metrics.timings, also_accepted)
+    if over:
+        failures.append(f"steps over budget: {', '.join(over)}")
+    return failures
+
+
 def assert_latency_targets(
     pipeline: Pipeline, limit_s: float, also_accepted: frozenset[str] = frozenset()
 ) -> None:
-    """Every phrase within the hard limit, p95 on target, steps within budget."""
-    summary = pipeline.metrics.summary()
-    assert summary.max_s <= limit_s
-    assert summary.p95_s <= P95_TARGET_S
-    assert stages_over_budget(pipeline.metrics.timings, also_accepted) == []
+    """Fail, naming every missed target, unless the run met them all."""
+    failures = latency_failures(pipeline, limit_s, also_accepted)
+    assert not failures, "; ".join(failures)
 
 
 def p95_latency_s(timings: Sequence[PhraseTiming]) -> float:

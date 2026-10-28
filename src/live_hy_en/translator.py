@@ -66,9 +66,9 @@ MT_MODELS = {
     "opus-mt-hy-en": MtModel("Helsinki-NLP/opus-mt-hy-en", OPUS_MT_FORMAT),
 }
 # Chosen by benchmarks/mt_benchmark.py: the best chrF++ on FLEURS, both from
-# correct Armenian (63.2) and from our ASR transcripts (55.0). At p95 0.87 s it
-# overruns the 0.5 s translation share, accepted because whole phrases still
-# finish far inside the 5 s limit (e2e replay max 2.18 s).
+# correct Armenian (63.0 in 8-bit) and from ASR transcripts (55.2). At p95 0.90 s
+# it overruns the 0.5 s translation share, accepted because whole phrases still
+# finish inside the 5 s limit (DECISIONS.md, translator.py 6 and 7).
 MT_MODEL = "nllb-200-distilled-1.3B"
 
 

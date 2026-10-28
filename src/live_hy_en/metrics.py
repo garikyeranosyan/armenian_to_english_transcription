@@ -1,6 +1,7 @@
 """Latency of each phrase through the pipeline, and a summary for the session."""
 
 import logging
+import math
 import statistics
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -66,7 +67,8 @@ class LatencySummary:
 def p95(values: Sequence[float]) -> float:
     """Return the 95th-percentile value (nearest rank)."""
     ordered = sorted(values)
-    return ordered[min(len(ordered) - 1, int(P95_FRACTION * len(ordered)))]
+    # Nearest rank is ceil(0.95 n), counted from 1.
+    return ordered[math.ceil(P95_FRACTION * len(ordered)) - 1]
 
 
 def format_timing(timing: PhraseTiming) -> str:

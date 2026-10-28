@@ -12,6 +12,7 @@ from tokenizers import Tokenizer
 from tokenizers.models import BPE
 
 import convert_asr
+import convert_mt
 from convert_asr import (
     ASR_CANDIDATES,
     COPY_FILES,
@@ -127,7 +128,7 @@ def fakes(monkeypatch, tmp_path):
     monkeypatch.setattr(
         convert_asr, "read_hub_json", lambda hub_id, name: state.hub_files.get(name, {})
     )
-    monkeypatch.setattr(convert_asr, "load_hf_token", lambda: None)
+    monkeypatch.setattr(convert_mt, "load_hf_token", lambda: None)
     monkeypatch.setattr(convert_asr, "ASR_MODELS_DIR", tmp_path)
     return state
 
@@ -219,3 +220,10 @@ def test_vocabulary_without_the_multilingual_marker_is_rejected(fakes, capsys):
     assert main(["whisper-turbo-armenian"]) == 1
     assert "CTranslate2 would run it as English-only" in capsys.readouterr().out
     assert list(fakes.models_dir.iterdir()) == []
+
+
+def test_unknown_model_is_rejected_with_a_usage_error(fakes, capsys):
+    with pytest.raises(SystemExit):
+        main(["whisper-large"])
+    assert "unknown model(s): whisper-large" in capsys.readouterr().err
+    assert FakeConverter.calls == []

@@ -48,6 +48,8 @@ DEFAULT_MODELS = ["small", "medium", "large-v3-turbo", "large-v3"]
 DEFAULT_CLIP_LIMIT = 200
 # Transcription share of the 5 s latency budget (PLAN.md §2).
 ASR_BUDGET_S = 2.0
+# Without a timeout, a stalled connection would hang a download forever.
+DOWNLOAD_TIMEOUT_S = 60
 
 # Armenian marks written inside a word (e.g. the question mark in "ինչպե՞ս").
 IN_WORD_MARKS = re.compile("[՚-՟]")
@@ -163,7 +165,8 @@ def download(url: str, target: Path, token: str | None) -> None:
     """Download a file, sending the Hugging Face token when there is one."""
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     partial = target.with_suffix(target.suffix + ".part")
-    with urllib.request.urlopen(urllib.request.Request(url, headers=headers)) as reply:
+    request = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(request, timeout=DOWNLOAD_TIMEOUT_S) as reply:
         with partial.open("wb") as file:
             shutil.copyfileobj(reply, file)
     partial.replace(target)

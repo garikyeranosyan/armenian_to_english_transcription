@@ -15,9 +15,9 @@ import pytest
 from asr_benchmark import load_fleurs
 from live_hy_en.metrics import MAX_LATENCY_S
 from replay import (
-    assert_latency_targets,
     build_tracks,
     entries_of,
+    latency_failures,
     log_to,
     needs_laptop,
     p95_latency_s,
@@ -75,9 +75,13 @@ def _soak(models) -> None:
         sampler.join()
     report(f"Soak, {placed[-1].end_s / 60:.0f} min", placed, shown, pipeline)
 
+    # Every check is measured and printed before any can fail, so one miss
+    # doesn't hide the others.
+    failures = []
     lost = [clip for clip in placed if not entries_of(clip, shown)]
-    assert lost == [], f"{len(lost)} phrases were lost"
-    assert_latency_targets(pipeline, MAX_LATENCY_S)
+    if lost:
+        failures.append(f"{len(lost)} phrases were lost")
+    failures += latency_failures(pipeline, MAX_LATENCY_S)
 
     timings = pipeline.metrics.timings
     quarter = len(timings) // 4
@@ -86,12 +90,16 @@ def _soak(models) -> None:
         p95_latency_s(timings[-quarter:]),
     )
     print(f"p95 delay: first quarter {first_s:.2f} s, last quarter {last_s:.2f} s")
-    assert last_s <= first_s + MAX_DELAY_GROWTH_S, "delay grows over the call"
+    if last_s > first_s + MAX_DELAY_GROWTH_S:
+        failures.append("delay grows over the call")
 
-    if sys.platform == "win32":
-        assert samples, "memory was not measured"
+    if sys.platform == "win32" and not samples:
+        failures.append("memory was not measured")
     if samples:
         settled = samples[len(samples) // 4]
         growth = max(samples[len(samples) // 4 :]) - settled
         print(f"Memory after settling: grew {growth / 2**20:.0f} MB")
-        assert growth <= MAX_MEMORY_GROWTH_BYTES, "memory grows over the call"
+        if growth > MAX_MEMORY_GROWTH_BYTES:
+            failures.append("memory grows over the call")
+
+    assert not failures, "; ".join(failures)

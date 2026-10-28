@@ -1,8 +1,8 @@
 """Convert Armenian Whisper fine-tunes to CTranslate2 once, into models/asr/.
 
 Run from the project folder, then benchmark the folder like any other model:
-    python benchmarks/convert_asr.py
-    python benchmarks/asr_benchmark.py --models models/asr/whisper-turbo-armenian
+    python benchmarks/convert_asr.py buzzasr-armenian
+    python benchmarks/asr_benchmark.py --models models/asr/buzzasr-armenian
 """
 
 import json
@@ -13,8 +13,7 @@ from pathlib import Path
 # Run as a script, so the program's own package isn't on the path yet.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from asr_benchmark import load_hf_token  # noqa: E402
-from convert_mt import convert_hub_model  # noqa: E402
+from convert_mt import convert_each, convert_hub_model, parse_model_names  # noqa: E402
 from live_hy_en.transcriber import ASR_MODELS_DIR  # noqa: E402
 
 # Folder name -> Hugging Face model ID.
@@ -221,19 +220,10 @@ def convert(name: str, models_dir: Path = ASR_MODELS_DIR) -> Path:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Convert every candidate; return 1 if any of them failed."""
-    names = list(argv) if argv else list(ASR_CANDIDATES)
-    # Puts HF_TOKEN from .env into the environment, where the Hub client reads it.
-    load_hf_token()
-    failed = []
-    for name in names:
-        try:
-            convert(name, ASR_MODELS_DIR)
-        except Exception as error:
-            print(f"{name}: conversion failed: {error}")
-            failed.append(name)
-    return 1 if failed else 0
+    """Convert each chosen candidate; return 1 if any of them failed."""
+    names = parse_model_names(argv, list(ASR_CANDIDATES), __doc__.splitlines()[0])
+    return convert_each(names, lambda name: convert(name, ASR_MODELS_DIR))
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

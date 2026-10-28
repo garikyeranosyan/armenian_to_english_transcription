@@ -125,7 +125,14 @@ def test_summary_line_is_readable(manual):
 
 @pytest.mark.parametrize(
     ("values", "expected"),
-    [([1.0], 1.0), (list(range(1, 21)), 20), (list(range(1, 101)), 96)],
+    # Nearest rank: the value at rank ceil(0.95 n), so of 1..100 it is 95.
+    [
+        ([1.0], 1.0),
+        (list(range(1, 21)), 19),
+        (list(range(1, 101)), 95),
+        (list(range(1, 11)), 10),
+        ([3.0, 1.0, 2.0], 3.0),
+    ],
 )
 def test_p95_is_the_nearest_rank(values, expected):
     assert p95(values) == expected
